@@ -54,9 +54,6 @@ KSU_VERSION_API := 4.1.0
 GIT_BIN := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin git
 CURL_BIN := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin curl
 
-KSU_GITHUB_VERSION := $(shell $(CURL_BIN) -s "https://api.github.com/repos/$(REPO_OWNER)/$(REPO_NAME)/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-KSU_GITHUB_VERSION_COMMIT := $(shell $(CURL_BIN) -sI "https://api.github.com/repos/$(REPO_OWNER)/$(REPO_NAME)/commits?sha=$(REPO_BRANCH)&per_page=1" | grep -i "link:" | sed -n 's/.*page=\([0-9]*\)>; rel="last".*/\1/p')
-
 ifeq ($(findstring $(srctree),$(src)),$(srctree))
   KSU_SRC := $(src)
 else
@@ -65,56 +62,37 @@ endif
 
 LOCAL_GIT_EXISTS := $(shell test -e $(KSU_SRC)/../.git && echo 1 || echo 0)
 
+ifeq ($(LOCAL_GIT_EXISTS),0)
+$(error You should use KernelSU as an git submodule instead of directly copy code)
+endif
+
 define get_ksu_version_full
 v$1-$(shell cd $(KSU_SRC); $(GIT_BIN) rev-parse --short=8 HEAD)@ReSukiSU
 endef
 
-ifeq ($(KSU_GITHUB_VERSION_COMMIT),)
-  ifeq ($(LOCAL_GIT_EXISTS),1)
-    $(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
-    KSU_LOCAL_VERSION := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-list --count $(REPO_BRANCH))
-    KSU_VERSION := $(shell expr 30000 + $(KSU_LOCAL_VERSION) + 700)
-    $(info -- $(REPO_NAME) version (local .git): $(KSU_VERSION))
-  else
-    KSU_VERSION := 13000
-    $(warning -- Could not fetch version online or via local .git! Using fallback version: $(KSU_VERSION))
-  endif
-else
-  KSU_VERSION := $(shell expr 30000 + $(KSU_GITHUB_VERSION_COMMIT) + 700)
-  $(info -- $(REPO_NAME) version (GitHub): $(KSU_VERSION))
-endif
+$(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
+KSU_LOCAL_VERSION := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-list --count $(REPO_BRANCH))
+KSU_VERSION := $(shell expr 30000 + $(KSU_LOCAL_VERSION) + 700)
+KSU_VERSION_FULL := $(call get_ksu_version_full,$(KSU_VERSION_API))
 
-ifeq ($(KSU_GITHUB_VERSION),)
-  ifeq ($(LOCAL_GIT_EXISTS),1)
-    $(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
-    KSU_VERSION_FULL := $(call get_ksu_version_full,$(KSU_VERSION_API))
-    $(info -- $(REPO_NAME) version (local .git): $(KSU_VERSION_FULL))
-    $(info -- $(REPO_NAME) Formatted version (local .git): $(KSU_VERSION))
-  else
-    KSU_VERSION_FULL := v$(KSU_VERSION_API)-$(REPO_NAME)-unknown@unknown
-    $(warning -- $(REPO_NAME) version: $(KSU_VERSION_FULL))
-  endif
-else
-  $(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
-  KSU_VERSION_FULL := $(call get_ksu_version_full,$(KSU_GITHUB_VERSION))
-  $(info -- $(REPO_NAME) version (Github): $(KSU_VERSION_FULL))
-endif
+$(info -- $(REPO_NAME) version code: $(KSU_VERSION))
+$(info -- $(REPO_NAME) version name: $(KSU_VERSION_FULL))
 
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 ccflags-y += -DKSU_VERSION_FULL=\"$(KSU_VERSION_FULL)\"
 
-$(info -- Supported Unofficial Manager: 5ec1cff (GKI) rsuntk (Non-GKI) ShirkNeko udochina (GKI and non-GKI and KPM))
+$(info -- Supported Unofficial Manager: MKSU, RKSU, SukiSU-Ultra, ReSukiSU )
 
 ifeq ($(CONFIG_KSU_MANUAL_HOOK), y)
 ccflags-y += -DKSU_MANUAL_HOOK
-$(info -- SukiSU: KSU_MANUAL_HOOK)
+$(info -- $(REPO_NAME): using KSU_MANUAL_HOOK)
 else ifeq ($(CONFIG_KSU_SUSFS), y)
 ccflags-y += -DCONFIG_KSU_SUSFS
-$(info -- SukiSU: SUSFS_INLINE_HOOK)
+$(info -- $(REPO_NAME): using SUSFS_INLINE_HOOK)
 else
 ccflags-y += -DKSU_KPROBES_HOOK
 ccflags-y += -DKSU_TP_HOOK
-$(info -- SukiSU: KSU_TRACEPOINT_HOOK)
+$(info -- $(REPO_NAME): using KSU_TRACEPOINT_HOOK)
 endif
 
 KERNEL_VERSION := $(VERSION).$(PATCHLEVEL)
@@ -134,97 +112,103 @@ $(info -- KERNEL_TYPE: $(KERNEL_TYPE))
 # Check if KPM is enabled
 ifeq ($(CONFIG_KPM), y)
 $(info -- KPM is enabled)
+$(info -- WARNING, This feature is unstable!!! You are WARNED!!!)
 else
 $(info -- KPM is disabled)
 endif
 
 # SELinux drivers check
 ifeq ($(shell grep -q "current_sid(void)" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
+$(info -- $(REPO_NAME)/compat: current_sid found)
 ccflags-y += -DKSU_COMPAT_HAS_CURRENT_SID
 endif
 ifeq ($(shell grep -q "struct selinux_state " $(srctree)/security/selinux/include/security.h; echo $$?),0)
+$(info -- $(REPO_NAME)/compat: selinux_state found)
 ccflags-y += -DKSU_COMPAT_HAS_SELINUX_STATE
 endif
 
 # Handle optional backports
 ifeq ($(shell grep -q "strncpy_from_user_nofault" $(srctree)/include/linux/uaccess.h; echo $$?),0)
-$(info -- KernelSU/compat: strncpy found)
+$(info -- $(REPO_NAME)/compat: strncpy found)
 ccflags-y += -DKSU_OPTIONAL_STRNCPY
 endif
 
 ifeq ($(shell grep -q "ssize_t kernel_read" $(srctree)/fs/read_write.c; echo $$?),0)
-$(info -- KernelSU/compat: kernel_read found)
+$(info -- $(REPO_NAME)/compat: kernel_read found)
 ccflags-y += -DKSU_OPTIONAL_KERNEL_READ
 endif
 
 ifeq ($(shell grep "ssize_t kernel_write" $(srctree)/fs/read_write.c | grep -q "const void" ; echo $$?),0)
-$(info -- KernelSU/compat: kernel_write found)
+$(info -- $(REPO_NAME)/compat: kernel_write found)
 ccflags-y += -DKSU_OPTIONAL_KERNEL_WRITE
 endif
 
 ifeq ($(shell grep -q "int\s\+path_mount" $(srctree)/fs/namespace.c; echo $$?),0)
-$(info -- KernelSU/compat: path_mount found)
+$(info -- $(REPO_NAME)/compat: path_mount found)
 ccflags-y += -DKSU_HAS_PATH_MOUNT
 endif
 
 ifeq ($(shell grep -q "int\s\+path_umount" $(srctree)/fs/namespace.c; echo $$?),0)
-$(info -- KernelSU/compat: path_umount found)
+$(info -- $(REPO_NAME)/compat: path_umount found)
 ccflags-y += -DKSU_HAS_PATH_UMOUNT
 endif
 
 ifeq ($(shell grep -q "inode_security_struct\s\+\*selinux_inode" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
-$(info -- KernelSU/compat: selinux_inode found)
+$(info -- $(REPO_NAME)/compat: selinux_inode found)
 ccflags-y += -DKSU_OPTIONAL_SELINUX_INODE
 endif
 
 ifeq ($(shell grep -q "task_security_struct\s\+\*selinux_cred" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
-$(info -- KernelSU/compat: selinux_cred found)
+$(info -- $(REPO_NAME)/compat: selinux_cred found)
 ccflags-y += -DKSU_OPTIONAL_SELINUX_CRED
 endif
 
 # seccomp_types.h were added on 6.7
 ifeq ($(shell grep -q "atomic_t\s\+filter_count" $(srctree)/include/linux/seccomp.h $(srctree)/include/linux/seccomp_types.h; echo $$?),0)
-$(info -- KernelSU/compat: seccomp_filter_count found)
+$(info -- $(REPO_NAME)/compat: seccomp_filter_count found)
 ccflags-y += -DKSU_OPTIONAL_SECCOMP_FILTER_CNT
 endif
 
 # some old kernel backport this, let's check if put_seccomp_filter still exist
 ifneq ($(shell grep -wq "put_seccomp_filter" $(srctree)/kernel/seccomp.c $(srctree)/include/linux/seccomp.h; echo $$?),0)
-$(info -- KernelSU/compat: put_seccomp_filter found)
+$(info -- $(REPO_NAME)/compat: put_seccomp_filter found)
 ccflags-y += -DKSU_OPTIONAL_SECCOMP_FILTER_RELEASE
 endif
 
 ifeq ($(shell grep -q "security_inode_init_security_anon" $(srctree)/include/linux/security.h; echo $$?),0)
-$(info -- KernelSU/compat: security_inode_init_security_anon found)
+$(info -- $(REPO_NAME)/compat: security_inode_init_security_anon found)
 ccflags-y += -DKSU_OPTIONAL_HAS_INIT_SEC_ANON
 endif
 
 ifeq ($(shell grep -q "anon_inode_getfd_secure" $(srctree)/fs/anon_inodes.c; echo $$?),0)
-$(info -- KernelSU/compat: anon_inode_getfd_secure found)
+$(info -- $(REPO_NAME)/compat: anon_inode_getfd_secure found)
 ccflags-y += -DKSU_HAS_GETFD_SECURE
 endif
 
 ifeq ($(shell grep -A1 "^int vfs_getattr" $(srctree)/fs/stat.c | grep -q "query_flags"; echo $$?),0)
-$(info -- KernelSU/compat: vfs_getattr() found)
+$(info -- $(REPO_NAME)/compat: vfs_getattr() found)
 ccflags-y += -DKSU_HAS_NEW_VFS_GETATTR
 endif
 
 ifeq ($(shell grep -q "static inline struct inode \*file_inode" $(srctree)/include/linux/fs.h; echo $$?),0)
-$(info -- KernelSU/compat: file_inode() found)
+$(info -- $(REPO_NAME)/compat: file_inode() found)
 ccflags-y += -DKSU_UL_HAS_FILE_INODE
 endif
 
 # Checks Samsung
 ifeq ($(shell grep -q "CONFIG_KDP_CRED" $(srctree)/kernel/cred.c; echo $$?),0)
+$(info -- $(REPO_NAME)/compat/samsung: CONFIG_KDP_CRED found)
 ccflags-y += -DSAMSUNG_UH_DRIVER_EXIST
 endif
 
 ifeq ($(shell grep -q "SEC_SELINUX_PORTING_COMMON" $(srctree)/security/selinux/avc.c; echo $$?),0)
+$(info -- $(REPO_NAME)/compat/samsung: SEC_SELINUX_PORTING_COMMON found)
 ccflags-y += -DSAMSUNG_SELINUX_PORTING
 endif
 
 # Function proc_ops check
 ifeq ($(shell grep -q "struct proc_ops " $(srctree)/include/linux/proc_fs.h; echo $$?),0)
+$(info -- $(REPO_NAME)/compat: proc_ops found)
 ccflags-y += -DKSU_COMPAT_HAS_PROC_OPS
 endif
 
@@ -241,10 +225,11 @@ endif
 
 ifdef KSU_MANAGER_PACKAGE
 ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
-$(info -- SukiSU Manager package name: $(KSU_MANAGER_PACKAGE))
+$(info -- KernelSU Manager package name: $(KSU_MANAGER_PACKAGE))
 endif
 
 ## For susfs stuff ##
+ifeq ($(CONFIG_KSU_SUSFS), y)
 ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
 $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
 $(info )
@@ -252,6 +237,13 @@ $(info -- SUSFS_VERSION: $(SUSFS_VERSION))
 else
 $(info -- You have not integrated susfs in your kernel yet.)
 $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
+$(error You should integrate susfs in your kernel.)
+endif
+endif
+
+## deny lkm build
+ifeq ($(CONFIG_KSU), m)
+$(error This branch not support LKM build, you should use main branch!)
 endif
 
 # Keep a new line here!! Because someone may append config
