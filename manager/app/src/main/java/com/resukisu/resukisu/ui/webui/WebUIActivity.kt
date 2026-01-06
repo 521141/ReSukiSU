@@ -2,10 +2,15 @@ package com.resukisu.resukisu.ui.webui
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -14,6 +19,8 @@ import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -40,6 +47,8 @@ class WebUIActivity : ComponentActivity() {
     private var webView = null as WebView?
     private lateinit var container: FrameLayout
     private var isInsetsEnabled = false
+    private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +73,27 @@ class WebUIActivity : ComponentActivity() {
         lifecycleScope.launch {
             SuperUserViewModel.isAppListLoaded.first { it }
             setupWebView()
+        }
+
+        fileChooserLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            val uris: Array<Uri>? = when (result.resultCode) {
+                RESULT_OK -> result.data?.let { data ->
+                    when {
+                        data.clipData != null -> {
+                            Array(data.clipData!!.itemCount) { i ->
+                                data.clipData!!.getItemAt(i).uri // Multiple files
+                            }
+                        }
+                        data.data != null -> { arrayOf(data.data!!) } // Single file
+                        else -> null
+                    }
+                }
+                else -> null
+            }
+            filePathCallback?.onReceiveValue(uris)
+            filePathCallback = null
         }
     }
     private fun setupWebView() {
@@ -146,6 +176,28 @@ class WebUIActivity : ComponentActivity() {
             settings.allowFileAccess = false
             addJavascriptInterface(WebViewInterface(WXOptions(this@WebUIActivity, this, ModId(moduleId))), "ksu")
             setWebViewClient(webViewClient)
+            webChromeClient = object : WebChromeClient() {
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?
+                ): Boolean {
+                    this@WebUIActivity.filePathCallback?.onReceiveValue(null)
+                    this@WebUIActivity.filePathCallback = filePathCallback
+                    val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }
+                    if (fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                    }
+                    try {
+                        fileChooserLauncher.launch(intent)
+                    } catch (_: ActivityNotFoundException) {
+                        filePathCallback?.onReceiveValue(null)
+                        this@WebUIActivity.filePathCallback = null
+                        return false
+                    }
+                    return true
+                }
+            }
             loadUrl("https://mui.kernelsu.org/index.html")
         }
 
