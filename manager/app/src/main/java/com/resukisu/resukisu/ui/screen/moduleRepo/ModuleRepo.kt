@@ -144,8 +144,6 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
 
     LaunchedEffect(Unit) {
         viewModel.sortStargazerCountFirst = prefs.getBoolean("module_repo_sort_star_first", false)
-//        scrollBehavior.state.heightOffset =
-//            scrollBehavior.state.heightOffsetLimit
     }
 
     Scaffold(
@@ -163,15 +161,8 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                         )
                     }
                 },
-                navigationContent = {
-                    IconButton(
-                        onClick = { navigator.popBackStack() },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back),
-                        )
-                    }
+                onBackClick = {
+                    navigator.popBackStack()
                 },
                 scrollBehavior = scrollBehavior,
                 searchBarPlaceHolderText = stringResource(R.string.search_modules)

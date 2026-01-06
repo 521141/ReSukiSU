@@ -4,15 +4,19 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AppBarWithSearch
@@ -41,6 +45,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -48,9 +54,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.theme.CardConfig
 import kotlinx.coroutines.launch
 
@@ -152,56 +160,61 @@ fun SearchAppBar(
     scrollBehavior: SearchBarScrollBehavior? = null,
     searchBarPlaceHolderText: String
 ) {
-    val textFieldState = rememberTextFieldState(
-        initialText = searchText
-    )
+    val textFieldState = rememberTextFieldState(initialText = searchText)
     val searchBarState = rememberSearchBarState()
-    val state = rememberSearchBarState()
+
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    var isFocused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
 
-    BackHandler(enabled = isFocused || state.currentValue == SearchBarValue.Expanded) {
-        if (state.currentValue == SearchBarValue.Expanded) {
-            scope.launch { state.animateToCollapsed() }
-        }
+    BackHandler(searchBarState.currentValue == SearchBarValue.Expanded) {
+        scope.launch { searchBarState.animateToCollapsed() }
         keyboardController?.hide()
         focusManager.clearFocus()
     }
 
-    val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) colorScheme.surfaceContainerLow else colorScheme.background
     val cardAlpha = CardConfig.cardAlpha
-
     LaunchedEffect(textFieldState.text) {
         onSearchTextChange(textFieldState.text.toString())
     }
 
-    DisposableEffect(Unit) { onDispose { keyboardController?.hide() } }
+    DisposableEffect(Unit) {
+        onDispose { keyboardController?.hide() }
+    }
+
+    val colorScheme = MaterialTheme.colorScheme
+    val cardColor =
+        if (CardConfig.isCustomBackgroundEnabled)
+            colorScheme.surfaceContainerLow
+        else
+            colorScheme.background
+
+    val isExpanded =
+        searchBarState.currentValue == SearchBarValue.Expanded
 
     AppBarWithSearch(
-        state = state,
+        state = searchBarState,
         inputField = {
             SearchBarDefaults.InputField(
                 modifier = Modifier
+                    .focusRequester(focusRequester)
                     .clip(SearchBarDefaults.inputFieldShape)
-                    .onFocusChanged {
-                        isFocused = it.isFocused
-                    }
                     .padding(bottom = 5.dp),
                 searchBarState = searchBarState,
                 textFieldState = textFieldState,
                 onSearch = { text ->
                     scope.launch { searchBarState.animateToCollapsed() }
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
                     onSearchTextChange(text)
                 },
                 colors = SearchBarDefaults.inputFieldColors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = cardAlpha),
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = cardAlpha),
                 ),
                 placeholder = {
-                    if (searchBarState.currentValue == SearchBarValue.Collapsed || !isFocused) {
+                    if (searchBarState.currentValue == SearchBarValue.Collapsed) {
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -214,17 +227,57 @@ fun SearchAppBar(
                 },
                 leadingIcon = {
                     Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector =
+                            if (onBackClick != null || !isExpanded)
+                                Icons.Default.Search
+                            else
+                                Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription =
+                            if (onBackClick != null || !isExpanded)
+                                stringResource(R.string.back)
+                            else
+                                stringResource(R.string.search),
+
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable {
+                                scope.launch {
+                                    if (onBackClick != null || !isExpanded) {
+                                        searchBarState.animateToExpanded()
+                                        focusRequester.requestFocus()
+                                        keyboardController?.show()
+                                    } else {
+                                        searchBarState.animateToCollapsed()
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                    }
+                                }
+                            }
+                            .padding(8.dp)
                     )
                 }
             )
         },
         navigationIcon = {
             if (onBackClick != null) {
-                IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null)
+                IconButton(onClick = {
+                    if (isExpanded) {
+                        scope.launch {
+                            searchBarState.animateToCollapsed()
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                        return@IconButton
+                    }
+                    onBackClick.invoke()
+                }) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(R.string.back)
+                    )
                 }
             } else {
                 navigationContent?.invoke()
@@ -233,26 +286,28 @@ fun SearchAppBar(
         actions = {
             dropdownContent?.invoke()
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        windowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+        ),
         scrollBehavior = scrollBehavior,
         colors = SearchBarDefaults.appBarWithSearchColors(
             searchBarColors = SearchBarDefaults.colors(
-                containerColor = cardColor.copy(alpha = cardAlpha)
+                containerColor = cardColor.copy(alpha = 0f)
             ),
-            scrolledSearchBarContainerColor = cardColor.copy(alpha = cardAlpha),
-            appBarContainerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledAppBarContainerColor = cardColor.copy(alpha = cardAlpha)
+            scrolledSearchBarContainerColor = cardColor.copy(alpha = 0f),
+            appBarContainerColor = cardColor.copy(alpha = 0f),
+            scrolledAppBarContainerColor = cardColor.copy(alpha = 0f)
         ),
         modifier = Modifier.statusBarsPadding()
     )
 }
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun SearchAppBarPreview() {
-    var searchText by remember { mutableStateOf("") }
     SearchAppBar(
         searchText = "",
         onSearchTextChange = {},
