@@ -3,7 +3,7 @@ name: Build Manager
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "dev", "ci", "miuix" ]
+    branches: [ "main", "dev", "ci", "miuix", "new-manager" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - '.github/workflows/build-lkm.yml'
@@ -12,7 +12,7 @@ on:
       - 'kernel/**'
       - 'userspace/**'
   pull_request:
-    branches: [ "main", "dev", "miuix" ]
+    branches: [ "main", "dev", "miuix" , "new-manager" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - '.github/workflows/build-lkm.yml'
@@ -181,13 +181,6 @@ jobs:
             echo "UPLOAD=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine commit info
-        id: commit
-        run: |
-          echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "MESSAGE=$(git log -1 --pretty=%B | tr '\n' ' ')" >> $GITHUB_OUTPUT
-          echo "URL=${{ github.server_url }}/${{ github.repository }}/commit/$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
       - name: Determine manager variant
         id: determine
         run: |
@@ -232,8 +225,8 @@ jobs:
           CHAT_ID: ${{ vars.CHAT_ID }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           MESSAGE_THREAD_ID: ${{ steps.determine.outputs.topicid }}
-          COMMIT_MESSAGE: ${{ steps.commit.outputs.MESSAGE }}
-          COMMIT_URL: ${{ steps.commit.outputs.URL }} 
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TITLE: ${{ steps.determine.outputs.title }}
           BRANCH: ${{ github.ref_name }}
