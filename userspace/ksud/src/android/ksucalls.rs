@@ -324,7 +324,7 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-const KSU_IOCTL_LIST_TRY_UMOUNT: i32 = _IOWR::<()>(K, 301);
+const KSU_IOCTL_LIST_TRY_UMOUNT: i32 = _IOWR::<()>(K, 255);
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
