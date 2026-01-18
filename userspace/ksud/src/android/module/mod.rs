@@ -22,18 +22,15 @@ use regex_lite::Regex;
 use zip_extensions::zip_extract_file_to_memory;
 
 use crate::{
-    android::module::ModuleType::{Active, All},
-    defs::{MODULE_DIR, MODULE_UPDATE_DIR, UPDATE_FILE_NAME},
-};
-#[allow(clippy::wildcard_imports)]
-use crate::{
     android::{
         ksucalls,
+        module::ModuleType::{Active, All},
         restorecon::{restore_syscon, setsyscon},
         sepolicy,
         utils::*,
     },
     assets, defs,
+    defs::{MODULE_DIR, MODULE_UPDATE_DIR, UPDATE_FILE_NAME},
 };
 
 const INSTALLER_CONTENT: &str = include_str!("./installer.sh");

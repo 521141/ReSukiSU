@@ -1,9 +1,7 @@
-#[allow(unused_imports)]
-use std::fs::{Permissions, set_permissions};
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 use std::{
-    fs::{File, OpenOptions, create_dir_all, remove_file, write},
+    fs::{File, OpenOptions, Permissions, create_dir_all, remove_file, set_permissions, write},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
