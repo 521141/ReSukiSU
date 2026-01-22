@@ -1,5 +1,6 @@
 package com.resukisu.resukisu.ui.component.settings
 
+import android.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -12,7 +13,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +58,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -114,6 +118,8 @@ fun SettingsBaseWidget(
 ) {
     val haptic = LocalHapticFeedback.current
     val alpha = if (enabled) 1f else 0.38f
+
+    val interactionSource = remember { MutableInteractionSource() }
     val onClickState = rememberUpdatedState(onClick)
     val onLongClickState = rememberUpdatedState(onLongClick)
 
@@ -121,18 +127,35 @@ fun SettingsBaseWidget(
         .fillMaxWidth()
         .then(
             if (enabled) {
-                Modifier.pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            haptic.performHapticFeedback(hapticFeedbackType)
-                            onLongClickState.value(it)
-                        },
-                        onTap = {
-                            haptic.performHapticFeedback(hapticFeedbackType)
-                            onClickState.value(it)
-                        }
+                Modifier
+                    .indication(
+                        interactionSource = interactionSource,
+                        indication = ripple()
                     )
-                }
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                val press = PressInteraction.Press(it)
+                                interactionSource.emit(press)
+
+                                try {
+                                    tryAwaitRelease()
+                                } finally {
+                                    interactionSource.emit(
+                                        PressInteraction.Release(press)
+                                    )
+                                }
+                            },
+                            onLongPress = {
+                                haptic.performHapticFeedback(hapticFeedbackType)
+                                onLongClickState.value(it)
+                            },
+                            onTap = {
+                                haptic.performHapticFeedback(hapticFeedbackType)
+                                onClickState.value(it)
+                            }
+                        )
+                    }
             } else Modifier
         )
 
@@ -647,7 +670,7 @@ fun DropdownWidget(
                     onSelectedIndexChange(currentIndex)
                     dismiss()
                 }) {
-                    Text(text = stringResource(id = android.R.string.ok))
+                    Text(text = stringResource(id = R.string.ok))
                 }
             },
             dismissButton = {
@@ -655,7 +678,7 @@ fun DropdownWidget(
                     setCurrentIndex(selectedIndex)
                     dismiss()
                 }) {
-                    Text(text = stringResource(id = android.R.string.cancel))
+                    Text(text = stringResource(id = R.string.cancel))
                 }
             }
         )
