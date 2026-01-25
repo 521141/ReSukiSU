@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.resukisu.resukisu.Natives
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.profile.Capabilities
 import com.resukisu.resukisu.profile.Groups
 import com.resukisu.resukisu.ui.util.getAppProfileTemplate
@@ -16,13 +17,11 @@ import com.resukisu.resukisu.ui.util.setAppProfileTemplate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.Locale
 
 
 /**
@@ -138,13 +137,7 @@ class TemplateViewModel : ViewModel() {
 
 private fun fetchRemoteTemplates() {
     runCatching {
-        val client: OkHttpClient = OkHttpClient.Builder()
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .build()
-
-        client.newCall(
+        ksuApp.okhttpClient.newCall(
             Request.Builder().url(TEMPLATE_INDEX_URL).build()
         ).execute().use { response ->
             if (!response.isSuccessful) {
@@ -155,7 +148,7 @@ private fun fetchRemoteTemplates() {
             0.until(remoteTemplateIds.length()).forEach { i ->
                 val id = remoteTemplateIds.getString(i)
                 Log.i(TAG, "fetch template: $id")
-                val templateJson = client.newCall(
+                val templateJson = ksuApp.okhttpClient.newCall(
                     Request.Builder().url(TEMPLATE_URL.format(id)).build()
                 ).runCatching {
                     execute().use { response ->

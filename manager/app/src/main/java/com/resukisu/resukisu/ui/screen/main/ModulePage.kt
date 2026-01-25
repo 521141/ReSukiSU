@@ -136,6 +136,7 @@ import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.resukisu.resukisu.KernelSUApplication
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.component.AnimatedFab
 import com.resukisu.resukisu.ui.component.ConfirmResult
 import com.resukisu.resukisu.ui.component.InstallConfirmationDialog
@@ -175,8 +176,6 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 
 private enum class ShortcutType {
     Action,
@@ -819,20 +818,14 @@ private fun ModuleList(
         downloadUrl: String,
         fileName: String
     ) {
-        val client = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-
         val request = okhttp3.Request.Builder()
             .url(changelogUrl)
-            .header("User-Agent", "SukiSU-Ultra/2.0")
             .build()
 
         val changelogResult = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    client.newCall(request).execute().body!!.string()
+                    ksuApp.okhttpClient.newCall(request).execute().body!!.string()
                 }
             }
         }

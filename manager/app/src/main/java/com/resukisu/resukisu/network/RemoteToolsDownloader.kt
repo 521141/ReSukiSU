@@ -2,7 +2,12 @@ package com.resukisu.resukisu.network
 
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.*
+import com.resukisu.resukisu.ksuApp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -154,7 +159,7 @@ class RemoteToolsDownloader(
                 connectTimeout = CONNECTION_TIMEOUT
                 readTimeout = READ_TIMEOUT
                 requestMethod = "GET"
-                setRequestProperty("User-Agent", "SukiSU-KPM-Downloader/1.0")
+                setRequestProperty("User-Agent", ksuApp.UserAgent)
                 setRequestProperty("Accept", "*/*")
                 setRequestProperty("Connection", "close")
             }

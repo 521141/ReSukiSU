@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -16,12 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.resukisu.resukisu.ksuApp
 import com.resukisu.resukisu.ui.util.module.LatestVersionInfo
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "DownloadUtil"
-private val CUSTOM_USER_AGENT = "SukiSU-Ultra/2.0 (Linux; Android ${Build.VERSION.RELEASE}; ${Build.MODEL})"
 private const val MAX_RETRY_COUNT = 3
 private const val RETRY_DELAY_MS = 3000L
 
@@ -78,7 +76,7 @@ fun download(
         .setMimeType("application/zip")
         .setTitle(fileName)
         .setDescription(description)
-        .addRequestHeader("User-Agent", CUSTOM_USER_AGENT)
+        .addRequestHeader("User-Agent", ksuApp.UserAgent)
         .setAllowedOverMetered(true)
         .setAllowedOverRoaming(true)
         .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
@@ -218,18 +216,11 @@ fun checkNewVersion(): LatestVersionInfo {
     val url = "https://api.github.com/repos/ReSukiSU/ReSukiSU/releases/latest"
     val defaultValue = LatestVersionInfo()
     return runCatching {
-        val client = okhttp3.OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .build()
-
         val request = okhttp3.Request.Builder()
             .url(url)
-            .header("User-Agent", CUSTOM_USER_AGENT)
             .build()
 
-        client.newCall(request).execute().use { response ->
+        ksuApp.okhttpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 Log.d("CheckUpdate", "Network request failed: ${response.message}")
                 return defaultValue

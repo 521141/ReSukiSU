@@ -21,7 +21,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 /**
  * @author ShirkNeko
@@ -32,7 +31,6 @@ class ModuleViewModel : ViewModel() {
     companion object {
         private const val TAG = "ModuleViewModel"
         private var modules by mutableStateOf<List<ModuleInfo>>(emptyList())
-        private const val CUSTOM_USER_AGENT = "SukiSU-Ultra/2.0"
     }
 
     fun getModuleSize(dirId: String): String {
@@ -238,18 +236,11 @@ class ModuleViewModel : ViewModel() {
             val url = m.updateJson
             Log.i(TAG, "checkUpdate url: $url")
 
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .build()
-
             val request = okhttp3.Request.Builder()
                 .url(url)
-                .header("User-Agent", CUSTOM_USER_AGENT)
                 .build()
 
-            val response = client.newCall(request).execute()
+            val response = ksuApp.okhttpClient.newCall(request).execute()
 
             Log.d(TAG, "checkUpdate code: ${response.code}")
             if (response.isSuccessful) {
