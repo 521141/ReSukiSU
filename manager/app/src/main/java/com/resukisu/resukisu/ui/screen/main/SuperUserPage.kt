@@ -71,7 +71,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -113,6 +112,7 @@ import com.resukisu.resukisu.ui.component.pinnedScrollBehavior
 import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
 import com.resukisu.resukisu.ui.screen.LabelText
 import com.resukisu.resukisu.ui.theme.CardConfig
+import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.module.ModuleModify
 import com.resukisu.resukisu.ui.viewmodel.AppCategory
 import com.resukisu.resukisu.ui.viewmodel.SortType
@@ -142,7 +142,7 @@ fun SuperUserPage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState
     val scope = rememberCoroutineScope()
     val scrollBehavior = pinnedScrollBehavior()
     val listState = rememberLazyListState()
-    val snackBarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = LocalSnackbarHost.current
 
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -239,7 +239,9 @@ fun SuperUserPage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState
         },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        snackbarHost = { SnackbarHost(snackBarHostState) },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         floatingActionButton = {
             SuperUserFab(viewModel, filteredAndSortedAppGroups, listState, scope, bottomPadding)

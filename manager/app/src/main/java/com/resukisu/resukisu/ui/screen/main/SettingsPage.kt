@@ -151,7 +151,12 @@ fun SettingsPage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState:
         topBar = {
             TopBar(scrollBehavior = scrollBehavior, hazeState = hazeState)
         },
-        snackbarHost = { SnackbarHost(snackBarHost) },
+        snackbarHost = {
+            SnackbarHost(
+                modifier = Modifier.padding(bottom = bottomPadding),
+                hostState = snackBarHost
+            )
+        },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)

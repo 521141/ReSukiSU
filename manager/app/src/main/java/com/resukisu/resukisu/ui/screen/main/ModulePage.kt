@@ -368,7 +368,14 @@ fun ModulePage(navigator: DestinationsNavigator, bottomPadding: Dp, hazeState: H
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Top + WindowInsetsSides.Horizontal
         ),
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) }
+        snackbarHost = {
+            SnackbarHost(
+                modifier = if (!fabVisible) {
+                    Modifier.padding(bottom = bottomPadding)
+                } else Modifier,
+                hostState = snackBarHost
+            )
+        }
     ) { innerPadding ->
         when {
             hasMagisk -> {

@@ -1,43 +1,97 @@
 package com.resukisu.resukisu.ui.screen.main
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import com.resukisu.resukisu.ui.component.*
-import com.resukisu.resukisu.ui.theme.*
-import com.resukisu.resukisu.ui.viewmodel.KpmViewModel
-import com.resukisu.resukisu.ui.util.*
-import java.io.File
-import androidx.core.content.edit
-import com.resukisu.resukisu.R
-import java.io.FileInputStream
-import java.net.*
-import android.app.Activity
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.component.AnimatedFab
+import com.resukisu.resukisu.ui.component.ConfirmDialogHandle
+import com.resukisu.resukisu.ui.component.ConfirmResult
+import com.resukisu.resukisu.ui.component.SearchAppBar
+import com.resukisu.resukisu.ui.component.pinnedScrollBehavior
+import com.resukisu.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.resukisu.ui.component.rememberCustomDialog
+import com.resukisu.resukisu.ui.component.rememberFabVisibilityState
+import com.resukisu.resukisu.ui.theme.getCardColors
+import com.resukisu.resukisu.ui.theme.getCardElevation
+import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.getRootShell
+import com.resukisu.resukisu.ui.util.loadKpmModule
+import com.resukisu.resukisu.ui.util.unloadKpmModule
+import com.resukisu.resukisu.ui.viewmodel.KpmViewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileInputStream
+import java.net.URLEncoder
 
 /**
  * @author ShirkNeko, liankong
@@ -49,7 +103,7 @@ fun KpmPage(bottomPadding: Dp, hazeState: HazeState?) {
     val viewModel: KpmViewModel = viewModel<KpmViewModel>()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val snackBarHost = remember { SnackbarHostState() }
+    val snackBarHost = LocalSnackbarHost.current
     val confirmDialog = rememberConfirmDialog()
 
     val listState = rememberLazyListState()
@@ -145,7 +199,9 @@ fun KpmPage(bottomPadding: Dp, hazeState: HazeState?) {
                             Icon(
                                 imageVector = Icons.Filled.Download,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp).padding(end = 4.dp)
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .padding(end = 4.dp)
                             )
                             Text(kpmInstallModeLoad)
                         }
@@ -172,7 +228,9 @@ fun KpmPage(bottomPadding: Dp, hazeState: HazeState?) {
                             Icon(
                                 imageVector = Icons.Filled.Inventory,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp).padding(end = 4.dp)
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .padding(end = 4.dp)
                             )
                             Text(kpmInstallModeEmbed)
                         }
@@ -308,7 +366,14 @@ fun KpmPage(bottomPadding: Dp, hazeState: HazeState?) {
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Top + WindowInsetsSides.Horizontal
         ),
-        snackbarHost = { SnackbarHost(snackBarHost) }
+        snackbarHost = {
+            SnackbarHost(
+                modifier = if (!fabVisible) {
+                    Modifier.padding(bottom = bottomPadding)
+                } else Modifier,
+                hostState = snackBarHost
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = (if (hazeState != null) Modifier.hazeSource(state = hazeState) else Modifier)
