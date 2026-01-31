@@ -16,6 +16,10 @@
 #include <linux/syscalls.h>
 #endif
 
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs_def.h>
+#endif // #ifdef CONFIG_KSU_SUSFS
+
 #include "manager.h"
 #include "kernel_umount.h"
 #include "klog.h" // IWYU pragma: keep
@@ -130,6 +134,13 @@ static void umount_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+extern void susfs_run_sus_path_loop(uid_t uid);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+extern void susfs_reorder_mnt_id(void);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+
 int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
     struct umount_tw *tw;
@@ -139,15 +150,10 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
-    if (!ksu_kernel_umount_enabled) {
-        return 0;
-    }
-
     if (!ksu_cred) {
         return 0;
     }
 
-#ifndef CONFIG_KSU_SUSFS
     // There are 5 scenarios:
     // 1. Normal app: zygote -> appuid
     // 2. Isolated process forked from zygote: zygote -> isolated_process
@@ -162,23 +168,14 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
-    // check old process's selinux context, if it is not zygote, ignore it!
-    // because some su apps may setuid to untrusted_app but they are in global mount namespace
-    // when we umount for such process, that is a disaster!
-    // also handle case 4 and 5
-    bool is_zygote_child = is_zygote(get_current_cred());
-    if (!is_zygote_child) {
-        pr_info("handle umount ignore non zygote child: %d\n", current->pid);
-        return 0;
+    // no need check zygote there, because we already check in setuid call
+
+    if (!ksu_kernel_umount_enabled) { // in susfs's impl, it ignore ksu_kernel_umount feature, keep same behavior
+        goto do_susfs_logic;
     }
-#endif // #ifndef CONFIG_KSU_SUSFS
 
     // umount the target mnt
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
-
-#if __SULOG_GATE
-    ksu_sulog_report_syscall(new_uid, NULL, "setuid", NULL);
-#endif
 
     tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
     if (!tw)
@@ -191,6 +188,23 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         kfree(tw);
         pr_warn("unmount add task_work failed\n");
     }
+
+do_susfs_logic:
+    // do susfs setuid when susfs enabled
+#ifdef CONFIG_KSU_SUSFS
+
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+    // We can reorder the mnt_id now after all sus mounts are umounted
+    susfs_reorder_mnt_id();
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+    susfs_run_sus_path_loop(new_uid);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+
+    susfs_set_current_proc_umounted();
+
+#endif
 
     return 0;
 }

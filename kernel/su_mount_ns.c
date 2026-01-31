@@ -191,8 +191,7 @@ static void ksu_mnt_ns_individual(void)
     }
 }
 
-#if !defined(CONFIG_KSU_SUSFS) &&                                              \
-    !defined(CONFIG_KSU_MANUAL_HOOK) // if tracepoint hook
+#ifdef KSU_TP_HOOK
 struct ksu_mns_tw {
     struct callback_head cb;
     int32_t ns_mode;

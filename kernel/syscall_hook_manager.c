@@ -289,24 +289,14 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
 static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 {
     if (unlikely(check_syscall_fastpath(id))) {
-#ifndef CONFIG_KSU_SUSFS
-#ifdef KSU_TP_HOOK
         if (ksu_su_compat_enabled) {
             // Handle newfstatat
             if (id == __NR_newfstatat) {
                 int *dfd = (int *)&PT_REGS_PARM1(regs);
-                int *flags = (int *)&PT_REGS_SYSCALL_PARM4(regs);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && defined(CONFIG_KSU_SUSFS)
-                // Kernel 6.1+ with SUSFS uses struct filename **
-                struct filename **filename_ptr =
-                    (struct filename **)&PT_REGS_PARM2(regs);
-                ksu_handle_stat(dfd, filename_ptr, flags);
-#else
-                // Older kernel or no SUSFS: use const char __user **
                 const char __user **filename_user =
                     (const char __user **)&PT_REGS_PARM2(regs);
+                int *flags = (int *)&PT_REGS_SYSCALL_PARM4(regs);
                 ksu_handle_stat(dfd, filename_user, flags);
-#endif
                 return;
             }
 
@@ -333,7 +323,6 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
                 return;
             }
         }
-#endif
 
         // Handle setresuid
         if (id == __NR_setresuid) {
@@ -343,7 +332,6 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
             ksu_handle_setresuid(ruid, euid, suid);
             return;
         }
-#endif
     }
 }
 #endif
