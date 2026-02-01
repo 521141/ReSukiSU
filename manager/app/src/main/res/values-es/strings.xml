@@ -151,7 +151,6 @@
     <string name="restore_allowlist">Restaurar lista de permisos</string>
     <string name="settings_custom_background">Fondo de aplicación personalizado</string>
     <string name="settings_custom_background_summary">Seleccionar una imagen como fondo</string>
-    <string name="settings_card_alpha">Transparencia de la barra de navegación</string>
     <string name="home_android_version">Versión de Android</string>
     <string name="home_device_model">Modelo del dispositivo</string>
     <string name="su_not_allowed">No se permite conceder superusuario a %s</string>
@@ -294,7 +293,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Idioma de la aplicación</string>
     <string name="language_system_default">Seguir sistema</string>
-    <string name="settings_card_dim">Ajuste de oscuridad de tarjeta</string>
     <!-- Flash related -->
     <string name="error_code">código de error</string>
     <string name="check_log">Por favor, compruebe el registro</string>

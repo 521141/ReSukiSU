@@ -152,7 +152,6 @@
     <string name="restore_allowlist">Відновити білий список</string>
     <string name="settings_custom_background">Власний фон додатку</string>
     <string name="settings_custom_background_summary">Вибрати зображення як фон</string>
-    <string name="settings_card_alpha">Прозорість панелі навігації</string>
     <string name="home_android_version">Версія Android</string>
     <string name="home_device_model">Модель пристрою</string>
     <string name="su_not_allowed">Надання прав суперкористувача для %s заборонено</string>
@@ -297,7 +296,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Мова додатку</string>
     <string name="language_system_default">Як у системі</string>
-    <string name="settings_card_dim">Налаштування затемнення карток</string>
     <!-- Flash related -->
     <string name="error_code">код помилки</string>
     <string name="check_log">Будь ласка, перевірте лог</string>

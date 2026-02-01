@@ -8,11 +8,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import zako.zako.zako.zakoui.screen.moreSettings.util.LocaleHelper
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
+import zako.zako.zako.zakoui.screen.moreSettings.util.LocaleHelper
 
 /**
  * 更多设置状态管理
@@ -70,7 +70,7 @@ class MoreSettingsState(
 
     // 卡片配置状态
     var cardAlpha by mutableFloatStateOf(CardConfig.cardAlpha)
-    var cardDim by mutableFloatStateOf(CardConfig.cardDim)
+    var backgroundDim by mutableFloatStateOf(ThemeConfig.backgroundDim)
     var isCustomBackgroundEnabled by mutableStateOf(ThemeConfig.customBackgroundUri != null)
 
     // DPI 设置

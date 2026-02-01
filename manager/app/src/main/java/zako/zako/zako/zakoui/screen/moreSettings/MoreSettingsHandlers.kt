@@ -7,15 +7,21 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.MainActivity
-import com.resukisu.resukisu.ui.theme.*
+import com.resukisu.resukisu.ui.theme.BackgroundManager
+import com.resukisu.resukisu.ui.theme.CardConfig
+import com.resukisu.resukisu.ui.theme.ThemeColors
+import com.resukisu.resukisu.ui.theme.ThemeConfig
+import com.resukisu.resukisu.ui.theme.saveAndApplyCustomBackground
+import com.resukisu.resukisu.ui.theme.saveCustomBackground
+import com.resukisu.resukisu.ui.theme.saveDynamicColorState
+import com.resukisu.resukisu.ui.theme.saveThemeColors
+import com.resukisu.resukisu.ui.theme.saveThemeMode
 import com.topjohnwu.superuser.Shell
 import zako.zako.zako.zakoui.screen.moreSettings.state.MoreSettingsState
 import zako.zako.zako.zakoui.screen.moreSettings.util.toggleLauncherIcon
@@ -36,7 +42,7 @@ class MoreSettingsHandlers(
         // 加载设置
         CardConfig.load(activity)
         state.cardAlpha = CardConfig.cardAlpha
-        state.cardDim = CardConfig.cardDim
+        state.backgroundDim = ThemeConfig.backgroundDim
         state.isCustomBackgroundEnabled = ThemeConfig.customBackgroundUri != null
 
         // 设置主题模式
@@ -192,9 +198,14 @@ class MoreSettingsHandlers(
     fun handleCustomBackground(transformedUri: Uri) {
         activity.saveAndApplyCustomBackground(transformedUri)
         state.isCustomBackgroundEnabled = true
+        CardConfig.cardAlpha = 0.55f
+        ThemeConfig.backgroundDim = 0f
         CardConfig.cardElevation = 0.dp
         CardConfig.isCustomBackgroundEnabled = true
-        saveCardConfig(activity)
+        CardConfig.save(activity)
+
+        state.cardAlpha = CardConfig.cardAlpha
+        state.backgroundDim = ThemeConfig.backgroundDim
 
         Toast.makeText(
             activity,
@@ -210,12 +221,15 @@ class MoreSettingsHandlers(
         activity.saveCustomBackground(null)
         state.isCustomBackgroundEnabled = false
         CardConfig.cardAlpha = 1f
-        CardConfig.cardDim = 0f
         CardConfig.isCustomAlphaSet = false
-        CardConfig.isCustomDimSet = false
         CardConfig.isCustomBackgroundEnabled = false
-        saveCardConfig(activity)
+        CardConfig.save(activity)
         ThemeConfig.preventBackgroundRefresh = false
+
+        state.cardAlpha = CardConfig.cardAlpha
+        state.backgroundDim = ThemeConfig.backgroundDim
+
+        BackgroundManager.saveBackgroundDim(activity, 0f)
 
         activity.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("prevent_background_refresh", false)
@@ -244,14 +258,9 @@ class MoreSettingsHandlers(
     /**
      * 处理卡片亮度变更
      */
-    fun handleCardDimChange(newValue: Float) {
-        state.cardDim = newValue
-        CardConfig.cardDim = newValue
-        CardConfig.isCustomDimSet = true
-        prefs.edit {
-            putBoolean("is_custom_dim_set", true)
-            putFloat("card_dim", newValue)
-        }
+    fun handleBackgroundDimChange(newValue: Float) {
+        state.backgroundDim = newValue
+        BackgroundManager.saveBackgroundDim(activity, newValue)
     }
 
     /**

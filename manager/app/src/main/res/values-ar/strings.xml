@@ -153,7 +153,6 @@
     <string name="restore_allowlist">استعادة قائمة المسموح بها</string>
     <string name="settings_custom_background">خلفية التطبيق المخصصة</string>
     <string name="settings_custom_background_summary">حدد صورة كخلفية</string>
-    <string name="settings_card_alpha">شفافية شريط التنقل</string>
     <string name="home_android_version">‏إصدار Android</string>
     <string name="home_device_model">نوع الجهاز</string>
     <string name="su_not_allowed">لا يسمح بمنح المستخدم المتميز ل %s</string>
@@ -296,7 +295,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">لغة التطبيق</string>
     <string name="language_system_default">اتبع النظام</string>
-    <string name="settings_card_dim">تعديل ظلام البطاقة</string>
     <!-- Flash related -->
     <string name="error_code">رمز الخطأ</string>
     <string name="check_log">يرجى التحقق من السجل</string>

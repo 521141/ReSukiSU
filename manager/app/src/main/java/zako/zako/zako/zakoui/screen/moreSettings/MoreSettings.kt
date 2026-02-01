@@ -807,7 +807,7 @@ private fun AlphaSlider(
         },
         onValueChangeFinished = {
             coroutineScope.launch(Dispatchers.IO) {
-                saveCardConfig(handlers.activity)
+                CardConfig.save(handlers.activity)
             }
         },
         valueRange = 0f..1f,
@@ -838,29 +838,29 @@ private fun DimSlider(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = stringResource(R.string.settings_card_dim),
+            text = stringResource(R.string.settings_background_dim),
             style = MaterialTheme.typography.titleSmall
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            text = "${(state.cardDim * 100).roundToInt()}%",
+            text = "${(state.backgroundDim * 100).roundToInt()}%",
             style = MaterialTheme.typography.labelMedium,
         )
     }
 
     val dimSliderValue by animateFloatAsState(
-        targetValue = state.cardDim,
+        targetValue = state.backgroundDim,
         label = "Dim Slider Animation"
     )
 
     Slider(
         value = dimSliderValue,
         onValueChange = { newValue ->
-            handlers.handleCardDimChange(newValue)
+            handlers.handleBackgroundDimChange(newValue)
         },
         onValueChangeFinished = {
             coroutineScope.launch(Dispatchers.IO) {
-                saveCardConfig(handlers.activity)
+                CardConfig.save(handlers.activity)
             }
         },
         valueRange = 0f..1f,
@@ -871,10 +871,6 @@ private fun DimSlider(
             inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     )
-}
-
-fun saveCardConfig(context: Context) {
-    CardConfig.save(context)
 }
 
 @Composable

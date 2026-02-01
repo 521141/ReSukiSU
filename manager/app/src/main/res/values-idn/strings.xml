@@ -154,7 +154,6 @@ Lanjutkan?</string>
     <string name="restore_allowlist">Pulihkan Daftar Izin</string>
     <string name="settings_custom_background">Latar Belakang Aplikasi Khusus</string>
     <string name="settings_custom_background_summary">Pilih gambar sebagai latar belakang</string>
-    <string name="settings_card_alpha">Transparansi Panel Navigasi</string>
     <string name="home_android_version">Versi Android</string>
     <string name="home_device_model">Model Perangkat</string>
     <string name="su_not_allowed">Pemberian hak superuser untuk %s tidak diizinkan</string>
@@ -302,7 +301,6 @@ Tanamkan: Secara permanen memasang ke sistem</string>
     <!-- Language settings related strings -->
     <string name="settings_language">Bahasa Aplikasi</string>
     <string name="language_system_default">Ikuti Sistem</string>
-    <string name="settings_card_dim">Pengaturan Pencahayaan Kartu</string>
     <!-- Flash related -->
     <string name="error_code">kode kesalahan</string>
     <string name="check_log">Silakan periksa log</string>

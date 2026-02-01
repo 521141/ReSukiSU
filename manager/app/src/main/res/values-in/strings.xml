@@ -155,7 +155,6 @@
     <string name="restore_allowlist">Pulihkan Daftar Izin</string>
     <string name="settings_custom_background">Latar belakang kustom</string>
     <string name="settings_custom_background_summary">Pilih gambar untuk latar belakang</string>
-    <string name="settings_card_alpha">NavBar transparant</string>
     <string name="home_android_version">Versi Android</string>
     <string name="home_device_model">Model Perangkat</string>
     <string name="su_not_allowed">Memberikan hak superuser kepada %s tidak diizinkan</string>
@@ -307,7 +306,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Bahasa Aplikasi</string>
     <string name="language_system_default">Mengikuti sistem</string>
-    <string name="settings_card_dim">Penyesuaian Kegelapan Kartu</string>
     <!-- Flash related -->
     <string name="error_code">Kode error</string>
     <string name="check_log">Silahkan periksa log</string>

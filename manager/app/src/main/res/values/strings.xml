@@ -167,7 +167,7 @@
     <string name="restore_allowlist">Restore Allowlist</string>
     <string name="settings_custom_background">Custom App Background</string>
     <string name="settings_custom_background_summary">Select an image as background</string>
-    <string name="settings_card_alpha">Navigation bar transparency</string>
+    <string name="settings_card_alpha">Card transparency</string>
     <string name="home_android_version">Android version</string>
     <string name="home_device_model">Device model</string>
     <string name="su_not_allowed">Granting superuser to %s is not allowed</string>
@@ -331,7 +331,7 @@
     <!-- Language settings related strings -->
     <string name="settings_language">App Language</string>
     <string name="language_system_default">Follow System</string>
-    <string name="settings_card_dim">Card Darkness Adjustment</string>
+    <string name="settings_background_dim">Background Darkness Adjustment</string>
     <!-- Flash related -->
     <string name="error_code">error code</string>
     <string name="check_log">Please check the log</string>

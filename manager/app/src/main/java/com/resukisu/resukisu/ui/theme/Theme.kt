@@ -28,14 +28,15 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -60,6 +61,7 @@ import java.io.FileOutputStream
 object ThemeConfig {
     // 主题状态
     var customBackgroundUri by mutableStateOf<Uri?>(null)
+    var backgroundDim by mutableFloatStateOf(0f)
     var forceDarkMode by mutableStateOf<Boolean?>(null)
     var currentTheme by mutableStateOf<ThemeColors>(ThemeColors.Default)
     var useDynamicColor by mutableStateOf(false)
@@ -163,6 +165,13 @@ object ThemeManager {
 object BackgroundManager {
     private const val TAG = "BackgroundManager"
 
+    fun saveBackgroundDim(context: Context, dim: Float) {
+        ThemeConfig.backgroundDim = dim
+        context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit(commit = true) {
+            putFloat("background_dim", dim)
+        }
+    }
+
     fun saveAndApplyCustomBackground(
         context: Context,
         uri: Uri,
@@ -193,12 +202,11 @@ object BackgroundManager {
     }
 
     fun loadCustomBackground(context: Context) {
-        val uriString = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
-            .getString("custom_background", null)
+        val prefs = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+        val uriString = prefs.getString("custom_background", null)
 
         val newUri = uriString?.toUri()
-        val preventRefresh = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
-            .getBoolean("prevent_background_refresh", false)
+        val preventRefresh = prefs.getBoolean("prevent_background_refresh", false)
 
         ThemeConfig.preventBackgroundRefresh = preventRefresh
 
@@ -208,6 +216,8 @@ object BackgroundManager {
             ThemeConfig.backgroundImageLoaded = false
             CardConfig.updateBackground(newUri != null)
         }
+
+        ThemeConfig.backgroundDim = prefs.getFloat("background_dim", 0f).coerceIn(0f, 1f)
     }
 
     private fun saveBackgroundUri(context: Context, uri: Uri?) {
@@ -228,7 +238,7 @@ object BackgroundManager {
     private fun copyImageToInternalStorage(context: Context, uri: Uri): Uri? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val fileName = "custom_background_${System.currentTimeMillis()}.jpg"
+            val fileName = "custom_background.jpg"
             val file = File(context.filesDir, fileName)
 
             FileOutputStream(file).use { outputStream ->
@@ -380,46 +390,25 @@ private fun CustomBackgroundLayer(uri: Uri, darkTheme: Boolean) {
             .zIndex(-1f)
             .alpha(alpha)
     ) {
+        val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
         // 背景图片
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .paint(painter = painter, contentScale = ContentScale.Crop)
+                .paint(
+                    painter = painter,
+                    contentScale = ContentScale.Crop,
+                )
                 .graphicsLayer {
                     this.alpha =
                         (painter.state as? AsyncImagePainter.State.Success)?.let { 1f } ?: 0f
                 }
+                .drawWithContent {
+                    drawContent()
+                    drawRect(color = surfaceContainer.copy(alpha = ThemeConfig.backgroundDim))
+                }
         )
-
-        // 遮罩层
-        BackgroundOverlay(darkTheme = darkTheme)
     }
-}
-
-@Composable
-private fun BackgroundOverlay(darkTheme: Boolean) {
-    if (!ThemeConfig.backgroundImageLoaded) return
-
-    val dimFactor = CardConfig.cardDim
-
-    // 边缘渐变遮罩
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        if (darkTheme) {
-                            Color.Black.copy(alpha = 0.2f + dimFactor * 0.2f)
-                        } else {
-                            Color.Black.copy(alpha = 0.05f + dimFactor * 0.1f)
-                        }
-                    ),
-                    radius = 1000f
-                )
-            )
-    )
 }
 
 @Composable

@@ -153,7 +153,6 @@
     <string name="restore_allowlist">Restaurer la liste blanche</string>
     <string name="settings_custom_background">Arrière-plan personnalisé de l\'application</string>
     <string name="settings_custom_background_summary">Image as arrière-plan</string>
-    <string name="settings_card_alpha">Transparence de la barre de navigation</string>
     <string name="home_android_version">Version Android</string>
     <string name="home_device_model">Modèle du téléphone</string>
     <string name="su_not_allowed">Donner un super-utilisateur à %s n\'est pas autorisé</string>
@@ -296,7 +295,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Langue de l\'application</string>
     <string name="language_system_default">Suivre le paramètre système</string>
-    <string name="settings_card_dim">Ajustement de l\'obscurité de la carte</string>
     <!-- Flash related -->
     <string name="error_code">code d\'erreur</string>
     <string name="check_log">Veuillez vérifier le journal</string>

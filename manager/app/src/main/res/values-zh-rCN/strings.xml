@@ -325,7 +325,7 @@
     <!-- Language settings related strings -->
     <string name="settings_language">应用语言</string>
     <string name="language_system_default">跟随系统</string>
-    <string name="settings_card_dim">卡片暗度调节</string>
+    <string name="settings_background_dim">背景暗度调节</string>
     <!-- Flash related -->
     <string name="error_code">错误代码</string>
     <string name="check_log">请查看日志</string>
