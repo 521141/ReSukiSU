@@ -14,8 +14,12 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
+import com.resukisu.resukisu.ui.util.controlKpmModule
+import com.resukisu.resukisu.ui.util.createRootShell
+import com.resukisu.resukisu.ui.util.listKpmModules
+import com.resukisu.resukisu.ui.util.listModules
+import com.resukisu.resukisu.ui.util.withNewRootShell
 import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
-import com.resukisu.resukisu.ui.util.*
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.UiThreadHandler
@@ -30,11 +34,16 @@ class WebViewInterface(
 ) : WXInterface(wxOptions) {
     override var name: String = "ksu"
 
+    val state get() = run {
+        if (this@WebViewInterface.context !is WebUIActivity) return@run null
+        val webUIActivity = this@WebViewInterface.context as WebUIActivity
+        webUIActivity.webUIState
+    }
+    val modDir get() = "/data/adb/modules/${modId.id}"
+
     companion object {
         fun factory() = JavaScriptInterface(WebViewInterface::class.java)
     }
-
-    private val modDir get() = "/data/adb/modules/${modId.id}"
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -69,56 +78,56 @@ class WebViewInterface(
         options: String?,
         callbackFunc: String
     ) {
-        val finalCommand = buildString {
-            processOptions(this, options)
-            append(cmd)
-        }
+        val finalCommand = StringBuilder()
+        processOptions(finalCommand, options)
+        finalCommand.append(cmd)
 
         val result = withNewRootShell(true) {
-            newJob().add(finalCommand).to(ArrayList(), ArrayList()).exec()
+            newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
         }
         val stdout = result.out.joinToString(separator = "\n")
         val stderr = result.err.joinToString(separator = "\n")
 
         val jsCode =
-            "(function() { try { ${callbackFunc}(${result.code}, ${
+            "javascript: (function() { try { ${callbackFunc}(${result.code}, ${
                 JSONObject.quote(
                     stdout
                 )
             }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
         webView.post {
-            webView.evaluateJavascript(jsCode, null)
+            webView.loadUrl(jsCode)
         }
     }
 
     @JavascriptInterface
     fun spawn(command: String, args: String, options: String?, callbackFunc: String) {
-        val finalCommand = buildString {
-            processOptions(this, options)
+        val finalCommand = StringBuilder()
 
-            if (!TextUtils.isEmpty(args)) {
-                append(command).append(" ")
-                JSONArray(args).let { argsArray ->
-                    for (i in 0 until argsArray.length()) {
-                        append("${argsArray.getString(i)} ")
-                    }
+        processOptions(finalCommand, options)
+
+        if (!TextUtils.isEmpty(args)) {
+            finalCommand.append(command).append(" ")
+            JSONArray(args).let { argsArray ->
+                for (i in 0 until argsArray.length()) {
+                    finalCommand.append(argsArray.getString(i))
+                    finalCommand.append(" ")
                 }
-            } else {
-                append(command)
             }
+        } else {
+            finalCommand.append(command)
         }
 
         val shell = createRootShell(true)
 
         val emitData = fun(name: String, data: String) {
             val jsCode =
-                "(function() { try { ${callbackFunc}.${name}.emit('data', ${
+                "javascript: (function() { try { ${callbackFunc}.${name}.emit('data', ${
                     JSONObject.quote(
                         data
                     )
                 }); } catch(e) { console.error('emitData', e); } })();"
             webView.post {
-                webView.evaluateJavascript(jsCode, null)
+                webView.loadUrl(jsCode)
             }
         }
 
@@ -134,21 +143,21 @@ class WebViewInterface(
             }
         }
 
-        val future = shell.newJob().add(finalCommand).to(stdout, stderr).enqueue()
+        val future = shell.newJob().add(finalCommand.toString()).to(stdout, stderr).enqueue()
         val completableFuture = CompletableFuture.supplyAsync {
             future.get()
         }
 
         completableFuture.thenAccept { result ->
             val emitExitCode =
-                $$"(function() { try { $${callbackFunc}.emit('exit', $${result.code}); } catch(e) { console.error(`emitExit error: ${e}`); } })();"
+                "javascript: (function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
             webView.post {
-                webView.evaluateJavascript(emitExitCode, null)
+                webView.loadUrl(emitExitCode)
             }
 
             if (result.code != 0) {
                 val emitErrCode =
-                    "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
+                    "javascript: (function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
                         JSONObject.quote(
                             result.err.joinToString(
                                 "\n"
@@ -156,7 +165,7 @@ class WebViewInterface(
                         )
                     };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
                 webView.post {
-                    webView.evaluateJavascript(emitErrCode, null)
+                    webView.loadUrl(emitErrCode)
                 }
             }
         }.whenComplete { _, _ ->
@@ -167,29 +176,33 @@ class WebViewInterface(
     @JavascriptInterface
     fun toast(msg: String) {
         webView.post {
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(webView.context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
     @JavascriptInterface
     fun fullScreen(enable: Boolean) {
+        val context = webView.context
         if (context is Activity) {
             Handler(Looper.getMainLooper()).post {
                 if (enable) {
-                    hideSystemUI(activity.window)
+                    hideSystemUI(context.window)
                 } else {
-                    showSystemUI(activity.window)
+                    showSystemUI(context.window)
                 }
             }
         }
-        enableInsets(enable)
+        enableEdgeToEdge(enable)
     }
 
     @JavascriptInterface
     fun enableInsets(enable: Boolean = true) {
-        if (context is WebUIActivity) {
-            (context as WebUIActivity).enableInsets(enable)
-        }
+        enableEdgeToEdge(enable)
+    }
+
+    @JavascriptInterface
+    fun enableEdgeToEdge(enable: Boolean = true) {
+        state?.isInsetsEnabled = enable
     }
 
     @JavascriptInterface
@@ -197,7 +210,7 @@ class WebViewInterface(
         val moduleInfos = JSONArray(listModules())
         val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
-        val moduleId = File(modDir).getName()
+        val moduleId = File(modDir).name
         for (i in 0 until moduleInfos.length()) {
             val currentInfo = moduleInfos.getJSONObject(i)
 
@@ -264,7 +277,14 @@ class WebViewInterface(
         return jsonArray.toString()
     }
 
-    // =================== KPM支持 =============================
+    @JavascriptInterface
+    fun exit() {
+        if (state != null) {
+            state?.requestExit()
+        } else {
+            activity.finish() // in webuix mode, we directly exit activity
+        }
+    }
 
     @JavascriptInterface
     fun listAllKpm(): String {
@@ -274,13 +294,6 @@ class WebViewInterface(
     @JavascriptInterface
     fun controlKpm(name: String, args: String): Int {
         return controlKpmModule(name, args)
-    }
-
-    @JavascriptInterface
-    fun exit() {
-        if (context is Activity) {
-            (context as Activity).finish()
-        }
     }
 }
 

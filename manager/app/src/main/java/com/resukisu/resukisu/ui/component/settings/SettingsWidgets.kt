@@ -104,7 +104,7 @@ fun SettingsBaseWidget(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     iconPlaceholder: Boolean = true,
-    title: String,
+    title: String?,
     description: String? = null,
     descriptionColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     enabled: Boolean = true,
@@ -187,27 +187,54 @@ fun SettingsBaseWidget(
                 .align(Alignment.CenterVertically)
         ) {
             Column {
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    fontSize = MaterialTheme.typography.titleMediumEmphasized.fontSize,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
-                    fontFamily = MaterialTheme.typography.titleMediumEmphasized.fontFamily,
-                )
-                description?.let {
-                    val color = if (isError) MaterialTheme.colorScheme.error
-                    else descriptionColor
-                    Text(
-                        text = it,
-                        color = color,
-                        style = MaterialTheme.typography.bodyMediumEmphasized,
-                        fontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize,
-                        fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
-                        lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
-                        fontWeight = MaterialTheme.typography.bodyMediumEmphasized.fontWeight,
+                AnimatedVisibility(
+                    visible = title != null,
+                    enter = expandVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        expandFrom = Alignment.Top // Unroll downwards like a blind
+                    ),
+                    exit = shrinkVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        shrinkTowards = Alignment.Top // Unroll downwards like a blind
                     )
+                ) {
+                    title?.let {
+                        Text(
+                            text = title,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.titleMediumEmphasized,
+                            fontSize = MaterialTheme.typography.titleMediumEmphasized.fontSize,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
+                            fontFamily = MaterialTheme.typography.titleMediumEmphasized.fontFamily,
+                        )
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = description != null,
+                    enter = expandVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        expandFrom = Alignment.Top // Unroll downwards like a blind
+                    ),
+                    exit = shrinkVertically(
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        shrinkTowards = Alignment.Top // Unroll downwards like a blind
+                    )
+                ) {
+                    description?.let {
+                        val color = if (isError) MaterialTheme.colorScheme.error
+                        else descriptionColor
+                        Text(
+                            text = it,
+                            color = color,
+                            style = MaterialTheme.typography.bodyMediumEmphasized,
+                            fontSize = MaterialTheme.typography.bodyMediumEmphasized.fontSize,
+                            fontFamily = MaterialTheme.typography.bodySmallEmphasized.fontFamily,
+                            lineHeight = MaterialTheme.typography.bodyMediumEmphasized.lineHeight,
+                            fontWeight = MaterialTheme.typography.bodyMediumEmphasized.fontWeight,
+                        )
+                    }
                 }
                 descriptionColumnContent()
             }
@@ -285,7 +312,7 @@ fun SettingsTextFieldWidget(
 
     SettingsBaseWidget(
         modifier = modifier,
-        title = if (showTitle) title else "",
+        title = if (showTitle) title else null,
         icon = null,
         iconPlaceholder = false,
         rowHeader = {
