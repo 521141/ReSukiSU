@@ -34,6 +34,9 @@ pub fn booted_load() -> Result<()> {
     let buf = fs::read_to_string(path)?;
 
     let json: Config = serde_json::from_str(&buf)?;
+    if json.hash.is_empty() || json.size == 0 {
+        return Ok(());
+    }
     let Ok(hash) = json.hash_bytes() else {
         return Ok(());
     };
