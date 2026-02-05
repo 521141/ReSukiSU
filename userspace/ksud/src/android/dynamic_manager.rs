@@ -55,6 +55,21 @@ pub fn parse_hash(s: &str) -> Result<[u8; 64], String> {
     Ok(hash)
 }
 
+pub fn clear() -> Result<()> {
+    let empty = Config {
+        size: 0,
+        hash: String::new(),
+    };
+
+    let string = serde_json::to_string_pretty(&empty)?;
+
+    fs::write(defs::DYNAMIC_MANAGER, string)?;
+
+    ksucalls::dynamic_manager_clear()?;
+
+    Ok(())
+}
+
 pub fn set(size: u32, hash: [u8; 64]) -> Result<()> {
     let mut json_raw = Config {
         size,
