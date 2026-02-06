@@ -78,6 +78,8 @@
     <string name="module_changelog">Catatan Perubahan</string>
     <string name="settings_profile_template">Templat Profil Aplikasi</string>
     <string name="settings_profile_template_summary">Kelola templat profil aplikasi lokal dan daring</string>
+    <string name="settings_check_update">Notifikasi pembaruan</string>
+    <string name="settings_check_update_summary">Periksa otomatis pembaruan modul dan manajer</string>
     <string name="app_profile_template_create">Buat Templat</string>
     <string name="app_profile_template_edit">Edit Templat</string>
     <string name="app_profile_template_id">ID</string>
@@ -98,8 +100,6 @@
     <string name="app_profile_template_save_failed">Gagal menyimpan templat</string>
     <string name="app_profile_template_import_empty">Papan klip kosong!</string>
     <string name="module_changelog_failed">Gagal memuat catatan perubahan: %s</string>
-    <string name="settings_check_update">Periksa Pembaruan</string>
-    <string name="settings_check_update_summary">Secara otomatis memeriksa pembaruan saat membuka aplikasi</string>
     <string name="grant_root_failed">Gagal memberikan hak akses root!</string>
     <string name="action">Aksi</string>
     <string name="close">Tutup</string>
@@ -136,10 +136,6 @@ Lanjutkan?</string>
     <string name="confirm">Konfirmasi</string>
     <string name="cancel">Batal</string>
     <!-- Backup related -->
-    <string name="backup_success">Pencadangan Berhasil (tar.gz)</string>
-    <string name="backup_failed">Gagal membuat cadangan: %1$s</string>
-    <string name="backup_modules">cadangan modul</string>
-    <string name="restore_modules">pulihkan modul</string>
     <!-- Restore related messages -->
     <string name="restore_success">Modul berhasil dipulihkan, perlu reboot</string>
     <string name="restore_failed">Gagal memulihkan: %1$s</string>
@@ -158,12 +154,9 @@ Lanjutkan?</string>
     <string name="restore_allowlist">Pulihkan Daftar Izin</string>
     <string name="settings_custom_background">Latar Belakang Aplikasi Khusus</string>
     <string name="settings_custom_background_summary">Pilih gambar sebagai latar belakang</string>
-    <string name="settings_card_alpha">Transparansi Panel Navigasi</string>
     <string name="home_android_version">Versi Android</string>
     <string name="home_device_model">Model Perangkat</string>
     <string name="su_not_allowed">Pemberian hak superuser untuk %s tidak diizinkan</string>
-    <string name="settings_disable_su">Nonaktifkan Kompatibilitas su</string>
-    <string name="settings_disable_su_summary">Sementara mencegah aplikasi mana pun mendapatkan hak root melalui perintah su (proses root yang ada tidak akan terpengaruh).</string>
     <string name="module_install_multiple_confirm_with_names">Apakah Anda yakin ingin memasang %1$d modul berikut?
 %2$s</string>
     <string name="more_settings">Pengaturan Lainnya</string>
@@ -219,13 +212,11 @@ Lanjutkan?</string>
     <string name="home_kpm_version">Versi KPM</string>
     <string name="close_notice">Tutup</string>
     <string name="kernel_module_notice">Fitur modul kernel berikut dikembangkan oleh KernelPatch dan dimodifikasi untuk menyertakan fitur modul kernel SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra menantikan</string>
     <string name="kpm_control_success">Berhasil</string>
     <string name="kpm_control_failed">Gagal</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Ke depannya, SukiSU Ultra akan menjadi cabang KSU yang relatif independen, tetapi kami tetap berterima kasih kepada KernelSU resmi, MKSU, dan lainnya atas kontribusi mereka!</string>
-    <string name="not_supported">Tidak Didukung</string>
-    <string name="supported">Didukung</string>
-    <string name="kernel_patched">Kernel Belum Di-patch</string>
+    <string name="kpm_not_supported">Tidak Didukung (%s)</string>
+    <string name="kpm_supported">Didukung (%s)</string>
+    <string name="kernel_not_patched">Kernel Belum Di-patch</string>
     <string name="kernel_not_enabled">Kernel Belum Diaktifkan</string>
     <string name="custom_settings">Pengaturan Khusus</string>
     <string name="kpm_install_mode">Pemasangan KPM</string>
@@ -290,10 +281,6 @@ Tanamkan: Secara permanen memasang ke sistem</string>
     <string name="show_kpm_info">Sembunyikan Fungsi KPM</string>
     <string name="show_kpm_info_summary">Menyembunyikan informasi dan fungsi KPM di layar utama dan panel bawah</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Pilih Mesin WebUI untuk Digunakan</string>
-    <string name="engine_auto_select">Pilih Otomatis</string>
-    <string name="engine_force_webuix">Paksa Gunakan WebUI X</string>
-    <string name="engine_force_ksu">Paksa Gunakan KSU WebUI</string>
     <string name="use_webuix_eruda">Sisipkan Eruda ke WebUI X</string>
     <string name="use_webuix_eruda_summary">Sisipkan konsol debug ke WebUI X untuk memudahkan debugging. Memerlukan debugging web diaktifkan.</string>
     <!-- DPI setting related strings -->
@@ -312,7 +299,6 @@ Tanamkan: Secara permanen memasang ke sistem</string>
     <!-- Language settings related strings -->
     <string name="settings_language">Bahasa Aplikasi</string>
     <string name="language_system_default">Ikuti Sistem</string>
-    <string name="settings_card_dim">Pengaturan Pencahayaan Kartu</string>
     <!-- Flash related -->
     <string name="error_code">kode kesalahan</string>
     <string name="check_log">Silakan periksa log</string>
@@ -494,7 +480,7 @@ Tanamkan: Secara permanen memasang ke sistem</string>
     <string name="susfs_backup_file_not_found">File cadangan tidak ditemukan</string>
     <string name="susfs_backup_invalid_format">Format file cadangan tidak valid</string>
     <string name="susfs_backup_version_mismatch">Versi cadangan tidak cocok, tetapi akan dicoba untuk dipulihkan</string>
-    <string name="susfs_restore_title">Pulihkan</string>
+    <string name="restore">Pulihkan</string>
     <string name="susfs_restore_description">Pulihkan konfigurasi SuSFS dari file cadangan. Ini akan menimpa semua pengaturan saat ini.</string>
     <string name="susfs_restore_select_file">Pilih File Cadangan</string>
     <string name="susfs_restore_success" formatted="false">Konfigurasi berhasil dipulihkan dari cadangan yang dibuat %s pada perangkat: %s</string>

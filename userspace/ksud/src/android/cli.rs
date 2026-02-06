@@ -786,7 +786,7 @@ pub fn run() -> Result<()> {
 
                     dynamic_manager::set(sign.0, hash)
                 }
-                DynamicManagerOp::Clear => ksucalls::dynamic_manager_clear(),
+                DynamicManagerOp::Clear => dynamic_manager::clear(),
             },
             Kernel::NotifyModuleMounted => {
                 ksucalls::report_module_mounted();

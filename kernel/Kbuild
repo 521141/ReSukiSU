@@ -43,9 +43,7 @@ obj-$(CONFIG_KSU) += kernelsu.o
 
 obj-$(CONFIG_KPM) += kpm/
 
-REPO_OWNER := ReSukiSU
 REPO_NAME := ReSukiSU
-REPO_BRANCH := main
 KSU_VERSION_API := 4.1.0
 
 GIT_BIN := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin git
@@ -64,7 +62,7 @@ v$1-$(shell cd $(KSU_SRC); $(GIT_BIN) rev-parse --short=8 HEAD)@ReSukiSU
 endef
 
 $(shell cd $(KSU_SRC); [ -f ../.git/shallow ] && $(GIT_BIN) fetch --unshallow)
-KSU_LOCAL_VERSION := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-list --count $(REPO_BRANCH))
+KSU_LOCAL_VERSION := $(shell cd $(KSU_SRC); $(GIT_BIN) rev-list --count HEAD)
 KSU_VERSION := $(shell expr 30000 + $(KSU_LOCAL_VERSION) + 700)
 KSU_VERSION_FULL := $(call get_ksu_version_full,$(KSU_VERSION_API))
 

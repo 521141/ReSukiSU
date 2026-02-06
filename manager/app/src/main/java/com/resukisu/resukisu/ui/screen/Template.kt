@@ -3,27 +3,61 @@ package com.resukisu.resukisu.ui.screen
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
@@ -36,8 +70,17 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
+import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
 import com.resukisu.resukisu.ui.theme.CardConfig
+import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.viewmodel.TemplateViewModel
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -46,17 +89,19 @@ import kotlinx.coroutines.launch
  * @date 2023/10/20.
  */
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Destination<RootGraph>
 @Composable
 fun AppProfileTemplateScreen(
     navigator: DestinationsNavigator,
     resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val hazeState = if (CardConfig.isCustomBackgroundEnabled) rememberHazeState() else null
     LaunchedEffect(Unit) {
         if (viewModel.templateList.isEmpty()) {
             viewModel.fetchTemplates()
@@ -112,7 +157,8 @@ fun AppProfileTemplateScreen(
                         }
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState
             )
         },
         floatingActionButton = {
@@ -130,14 +176,28 @@ fun AppProfileTemplateScreen(
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             )
         },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         PullToRefreshBox(
-            modifier = Modifier.padding(innerPadding),
+            state = pullRefreshState,
+            modifier = (if (hazeState != null) Modifier.hazeSource(hazeState) else Modifier).nestedScroll(
+                scrollBehavior.nestedScrollConnection
+            ),
             isRefreshing = viewModel.isRefreshing,
             onRefresh = {
                 scope.launch { viewModel.fetchTemplates() }
-            }
+            },
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullRefreshState,
+                    isRefreshing = viewModel.isRefreshing,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = innerPadding.calculateTopPadding()),
+                )
+            },
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -147,8 +207,53 @@ fun AppProfileTemplateScreen(
                     PaddingValues(bottom = 16.dp + 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */)
                 }
             ) {
-                items(viewModel.templateList, key = { it.id }) { app ->
-                    TemplateItem(navigator, app)
+                item {
+                    Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding()))
+                }
+
+                viewModel.templateList.forEachIndexed { index, app ->
+                    item(key = app.id) {
+                        val sharedStiffness = Spring.StiffnessMediumLow
+                        val cornerRadius = 16.dp
+                        val connectionRadius = 4.dp
+                        val isFirst = index == 0
+                        val isLast = index == viewModel.templateList.size - 1
+
+                        val targetTopRadius = if (isFirst) cornerRadius else connectionRadius
+                        val targetBottomRadius = if (isLast) cornerRadius else connectionRadius
+
+                        val animatedTopRadius by animateDpAsState(
+                            targetValue = targetTopRadius,
+                            animationSpec = spring(stiffness = sharedStiffness),
+                            label = "TopCornerRadius"
+                        )
+                        val animatedBottomRadius by animateDpAsState(
+                            targetValue = targetBottomRadius,
+                            animationSpec = spring(stiffness = sharedStiffness),
+                            label = "BottomCornerRadius"
+                        )
+
+                        Surface(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 2.dp),
+                            shape = RoundedCornerShape(
+                                topStart = animatedTopRadius,
+                                topEnd = animatedTopRadius,
+                                bottomStart = animatedBottomRadius,
+                                bottomEnd = animatedBottomRadius
+                            ),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                alpha = CardConfig.cardAlpha
+                            ),
+                        ) {
+                            TemplateItem(navigator, app)
+                        }
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding()))
                 }
             }
         }
@@ -161,64 +266,102 @@ private fun TemplateItem(
     navigator: DestinationsNavigator,
     template: TemplateViewModel.TemplateInfo
 ) {
-    ListItem(
-        modifier = Modifier
-            .clickable {
-                navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
-            },
-        headlineContent = { Text(template.name) },
-        supportingContent = {
-            Column {
-                Text(
-                    text = "${template.id}${if (template.author.isEmpty()) "" else "@${template.author}"}",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+    SettingsJumpPageWidget(
+        title = template.name,
+        iconPlaceholder = false,
+        onClick = {
+            navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
+        },
+        descriptionColumnContent = {
+            Text(
+                text = "${template.id}${if (template.author.isEmpty()) "" else "@${template.author}"}",
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            )
+            Text(template.description)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 5.dp)
+            ) {
+                LabelText("UID: ${template.uid}")
+                LabelText(
+                    label = "GID: ${template.gid}",
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                Text(template.description)
-                FlowRow {
-                    LabelText(label = "UID: ${template.uid}")
-                    LabelText(label = "GID: ${template.gid}")
-                    LabelText(label = template.context)
-                    if (template.local) {
-                        LabelText(label = "local")
-                    } else {
-                        LabelText(label = "remote")
-                    }
+                LabelText(
+                    label = template.context,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                if (template.local) {
+                    LabelText(
+                        label = stringResource(R.string.local),
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                } else {
+                    LabelText(
+                        label = stringResource(R.string.remote),
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 }
             }
         }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
     onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    hazeState: HazeState?
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
-    val cardAlpha = CardConfig.cardAlpha
+    MaterialTheme.colorScheme
 
-    TopAppBar(
+    val hazeStyle = if (ThemeConfig.backgroundImageLoaded) HazeStyle(
+        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+            alpha = 0.8f
+        ),
+        tint = HazeTint(Color.Transparent)
+    ) else null
+
+    val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
+    val modifier =
+        if (ThemeConfig.backgroundImageLoaded && hazeStyle != null && hazeState != null) {
+            Modifier.hazeEffect(hazeState) {
+                style = hazeStyle
+                noiseFactor = 0f
+                blurRadius = 30.dp
+                alpha = collapsedFraction
+            }
+        } else Modifier
+
+    LargeFlexibleTopAppBar(
+        modifier = modifier,
         title = {
             Text(stringResource(R.string.settings_profile_template))
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor =
+                if (ThemeConfig.backgroundImageLoaded) Color.Transparent
+                else MaterialTheme.colorScheme.surfaceContainer,
+            scrolledContainerColor =
+                if (ThemeConfig.backgroundImageLoaded) Color.Transparent
+                else MaterialTheme.colorScheme.surfaceContainer,
         ),
         navigationIcon = {
-            IconButton(
+            AppBackButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            )
         },
         actions = {
             IconButton(onClick = onSync) {
@@ -255,28 +398,30 @@ private fun TopBar(
                 }
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
         scrollBehavior = scrollBehavior
     )
 }
 
 @Composable
-fun LabelText(label: String) {
-    Box(
-        modifier = Modifier
-            .padding(top = 4.dp, end = 4.dp)
-            .background(
-                Color.Black,
-                shape = RoundedCornerShape(4.dp)
-            )
+fun LabelText(
+    label: String,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary
+) {
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = containerColor
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
-            style = TextStyle(
-                fontSize = 8.sp,
-                color = Color.White,
-            )
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp
+            ),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

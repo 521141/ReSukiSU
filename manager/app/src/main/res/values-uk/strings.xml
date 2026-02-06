@@ -38,6 +38,10 @@
     <string name="module_uninstall_failed">Не вдалося видалити: %s</string>
     <string name="module_version">Версія</string>
     <string name="module_author">Автор</string>
+    <string name="settings_sucompat">Перенаправлення бінарного файлу su</string>
+    <string name="settings_sucompat_summary">Дозволяє програмам з правами Суперкористувача в профілі програми отримати оболонку суперкористувача шляхом виконання /system/bin/su; діє тільки для нових процесів.</string>
+    <string name="settings_kernel_umount">Розмонтування ядра</string>
+    <string name="settings_kernel_umount_summary">Поведінка розмонтування на рівні ядра, контрольована KernelSU</string>
     <string name="refresh">Оновити</string>
     <string name="show_system_apps">Показати системні додатки</string>
     <string name="hide_system_apps">Сховати системні додатки</string>
@@ -78,6 +82,8 @@
     <string name="module_changelog">Список змін</string>
     <string name="settings_profile_template">Шаблон профілю додатку</string>
     <string name="settings_profile_template_summary">Керування локальними та онлайн-шаблонами профілю додатку</string>
+    <string name="settings_check_update">Сповіщення про оновлення</string>
+    <string name="settings_check_update_summary">Автоматично перевіряти наявність оновлень модуля та менеджера</string>
     <string name="app_profile_template_create">Створити шаблон</string>
     <string name="app_profile_template_edit">Редагувати шаблон</string>
     <string name="app_profile_template_id">ID</string>
@@ -98,8 +104,6 @@
     <string name="app_profile_template_save_failed">Не вдалося зберегти шаблон</string>
     <string name="app_profile_template_import_empty">Буфер обміну порожній!</string>
     <string name="module_changelog_failed">Не вдалося завантажити список змін: %s</string>
-    <string name="settings_check_update">Перевіряти оновлення</string>
-    <string name="settings_check_update_summary">Автоматично перевіряти оновлення при відкритті додатку</string>
     <string name="grant_root_failed">Не вдалося надати root-права!</string>
     <string name="action">Дія</string>
     <string name="close">Закрити</string>
@@ -134,10 +138,6 @@
     <string name="confirm">Підтвердити</string>
     <string name="cancel">Скасувати</string>
     <!-- Backup related -->
-    <string name="backup_success">Резервне копіювання успішне (tar.gz)</string>
-    <string name="backup_failed">Не вдалося створити резервну копію: %1$s</string>
-    <string name="backup_modules">резервне копіювання модулів</string>
-    <string name="restore_modules">відновлення модулів</string>
     <!-- Restore related messages -->
     <string name="restore_success">Модулі успішно відновлено, потрібне перезавантаження</string>
     <string name="restore_failed">Не вдалося відновити: %1$s</string>
@@ -156,12 +156,9 @@
     <string name="restore_allowlist">Відновити білий список</string>
     <string name="settings_custom_background">Власний фон додатку</string>
     <string name="settings_custom_background_summary">Вибрати зображення як фон</string>
-    <string name="settings_card_alpha">Прозорість панелі навігації</string>
     <string name="home_android_version">Версія Android</string>
     <string name="home_device_model">Модель пристрою</string>
     <string name="su_not_allowed">Надання прав суперкористувача для %s заборонено</string>
-    <string name="settings_disable_su">Вимкнути сумісність з su</string>
-    <string name="settings_disable_su_summary">Тимчасово заборонити будь-яким додаткам отримувати root-права через команду su (існуючі root-процеси не будуть зачеплені).</string>
     <string name="module_install_multiple_confirm_with_names">Ви впевнені, що хочете встановити наступні %1$d модулі? \n\n%2$s</string>
     <string name="more_settings">Більше налаштувань</string>
     <string name="selinux">SELinux</string>
@@ -216,13 +213,11 @@
     <string name="home_kpm_version">Версія KPM</string>
     <string name="close_notice">Закрити</string>
     <string name="kernel_module_notice">Наступні функції модулів ядра були розроблені KernelPatch та модифіковані для включення функцій модулів ядра SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra з нетерпінням чекає</string>
     <string name="kpm_control_success">Успішно</string>
     <string name="kpm_control_failed">Невдача</string>
-    <string name="home_click_to_ContributionCard_kernelsu">У майбутньому SukiSU Ultra буде відносно незалежною гілкою KSU, але ми все ще вдячні офіційному KernelSU, MKSU та іншим за їхній внесок!</string>
-    <string name="not_supported">Не підтримується</string>
-    <string name="supported">Підтримується</string>
-    <string name="kernel_patched">Ядро не пропатчене</string>
+    <string name="kpm_not_supported">Не підтримується (%s)</string>
+    <string name="kpm_supported">Підтримується (%s)</string>
+    <string name="kernel_not_patched">Ядро не пропатчене</string>
     <string name="kernel_not_enabled">Ядро не налаштоване</string>
     <string name="custom_settings">Власні налаштування</string>
     <string name="kpm_install_mode">Встановлення KPM</string>
@@ -285,10 +280,6 @@
     <string name="show_kpm_info">Приховати функцію KPM</string>
     <string name="show_kpm_info_summary">Приховує інформацію та функцію KPM на головному екрані та в нижній панелі</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Виберіть рушій WebUI для використання</string>
-    <string name="engine_auto_select">Автоматичний вибір</string>
-    <string name="engine_force_webuix">Примусово використовувати WebUI X</string>
-    <string name="engine_force_ksu">Примусово використовувати KSU WebUI</string>
     <string name="use_webuix_eruda">Впровадити Eruda у WebUI X</string>
     <string name="use_webuix_eruda_summary">Впровадити консоль налагодження у WebUI X для полегшення налагодження. Потребує увімкненого веб-налагодження.</string>
     <!-- DPI setting related strings -->
@@ -307,7 +298,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Мова додатку</string>
     <string name="language_system_default">Як у системі</string>
-    <string name="settings_card_dim">Налаштування затемнення карток</string>
     <!-- Flash related -->
     <string name="error_code">код помилки</string>
     <string name="check_log">Будь ласка, перевірте лог</string>
@@ -489,7 +479,7 @@
     <string name="susfs_backup_file_not_found">Файл резервної копії не знайдено</string>
     <string name="susfs_backup_invalid_format">Недійсний формат файлу резервної копії</string>
     <string name="susfs_backup_version_mismatch">Невідповідність версії резервної копії, але буде зроблена спроба відновлення</string>
-    <string name="susfs_restore_title">Відновлення</string>
+    <string name="restore">Відновлення</string>
     <string name="susfs_restore_description">Відновити конфігурації SuSFS з файлу резервної копії. Це перезапише всі поточні налаштування.</string>
     <string name="susfs_restore_select_file">Вибрати файл резервної копії</string>
     <string name="susfs_restore_success" formatted="false">Конфігурацію успішно відновлено з резервної копії, створеної %s на пристрої: %s</string>

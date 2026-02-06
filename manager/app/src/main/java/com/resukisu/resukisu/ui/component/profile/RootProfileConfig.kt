@@ -1,11 +1,22 @@
 package com.resukisu.resukisu.ui.component.profile
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -17,7 +28,11 @@ import androidx.core.text.isDigitsOnly
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.input.InputDialog
-import com.maxkeppeler.sheets.input.models.*
+import com.maxkeppeler.sheets.input.models.InputHeader
+import com.maxkeppeler.sheets.input.models.InputSelection
+import com.maxkeppeler.sheets.input.models.InputTextField
+import com.maxkeppeler.sheets.input.models.InputTextFieldType
+import com.maxkeppeler.sheets.input.models.ValidationResult
 import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
@@ -26,81 +41,32 @@ import com.resukisu.resukisu.R
 import com.resukisu.resukisu.profile.Capabilities
 import com.resukisu.resukisu.profile.Groups
 import com.resukisu.resukisu.ui.component.rememberCustomDialog
+import com.resukisu.resukisu.ui.component.settings.SettingsDropdownWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsJumpPageWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsTextFieldWidget
+import com.resukisu.resukisu.ui.component.settings.SplicedColumnGroup
+import com.resukisu.resukisu.ui.component.settings.SplicedGroupScope
 import com.resukisu.resukisu.ui.util.isSepolicyValid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
-    modifier: Modifier = Modifier,
-    fixedName: Boolean,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-    Column(modifier = modifier) {
-        if (!fixedName) {
-            OutlinedTextField(
-                label = { Text(stringResource(R.string.profile_name)) },
-                value = profile.name,
-                onValueChange = { onProfileChange(profile.copy(name = it)) }
-            )
-        }
+    SplicedColumnGroup {
+        rootProfileConfig(
+            profile,
+            onProfileChange
+        )
+    }
+}
 
-        /* 
-        var expanded by remember { mutableStateOf(false) }
-        val currentNamespace = when (profile.namespace) {
-            Natives.Profile.Namespace.INHERITED.ordinal -> stringResource(R.string.profile_namespace_inherited)
-            Natives.Profile.Namespace.GLOBAL.ordinal -> stringResource(R.string.profile_namespace_global)
-            Natives.Profile.Namespace.INDIVIDUAL.ordinal -> stringResource(R.string.profile_namespace_individual)
-            else -> stringResource(R.string.profile_namespace_inherited)
-        }
-        ListItem(headlineContent = {
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth(),
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.profile_namespace)) },
-                    value = currentNamespace,
-                    onValueChange = {},
-                    trailingIcon = {
-                        if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
-                        else Icon(Icons.Filled.ArrowDropDown, null)
-                    },
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_inherited)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.INHERITED.ordinal))
-                            expanded = false
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_global)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.GLOBAL.ordinal))
-                            expanded = false
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_individual)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.INDIVIDUAL.ordinal))
-                            expanded = false
-                        },
-                    )
-                }
-            }
-        })
-        */
-
+fun SplicedGroupScope.rootProfileConfig(
+    profile: Natives.Profile,
+    onProfileChange: (Natives.Profile) -> Unit,
+) {
+    item {
         UidPanel(uid = profile.uid, label = "uid", onUidChange = {
             onProfileChange(
                 profile.copy(
@@ -109,7 +75,9 @@ fun RootProfileConfig(
                 )
             )
         })
+    }
 
+    item {
         UidPanel(uid = profile.gid, label = "gid", onUidChange = {
             onProfileChange(
                 profile.copy(
@@ -118,7 +86,9 @@ fun RootProfileConfig(
                 )
             )
         })
+    }
 
+    item {
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->
                 Groups.entries.find { it.gid == g }
@@ -132,7 +102,9 @@ fun RootProfileConfig(
                 )
             )
         }
+    }
 
+    item {
         val selectedCaps = profile.capabilities.mapNotNull { e ->
             Capabilities.entries.find { it.cap == e }
         }
@@ -145,7 +117,20 @@ fun RootProfileConfig(
                 )
             )
         }
+    }
 
+    item {
+        MountNameSpacePanel(profile = profile) {
+            onProfileChange(
+                profile.copy(
+                    namespace = it,
+                    rootUseDefault = false
+                )
+            )
+        }
+    }
+
+    item {
         SELinuxPanel(profile = profile, onSELinuxChange = { domain, rules ->
             onProfileChange(
                 profile.copy(
@@ -155,7 +140,6 @@ fun RootProfileConfig(
                 )
             )
         })
-
     }
 }
 
@@ -186,62 +170,47 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
 
         val selection = HashSet(selected)
 
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        ) {
-            ListDialog(
-                state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                    closeSelection(selection)
-                }, onCloseRequest = {
-                    dismiss()
-                }),
-                header = Header.Default(
-                    title = stringResource(R.string.profile_groups),
-                ),
-                selection = ListSelection.Multiple(
-                    showCheckBoxes = true,
-                    options = options,
-                    maxChoices = 32, // Kernel only supports 32 groups at most
-                ) { indecies, _ ->
-                    // Handle selection
-                    selection.clear()
-                    indecies.forEach { index ->
-                        val group = groups[index]
-                        selection.add(group)
-                    }
+        ListDialog(
+            state = rememberUseCaseState(visible = true, onFinishedRequest = {
+                closeSelection(selection)
+            }, onCloseRequest = {
+                dismiss()
+            }),
+            header = Header.Default(
+                title = stringResource(R.string.profile_groups),
+            ),
+            selection = ListSelection.Multiple(
+                showCheckBoxes = true,
+                options = options,
+                maxChoices = 32, // Kernel only supports 32 groups at most
+            ) { indecies, _ ->
+                // Handle selection
+                selection.clear()
+                indecies.forEach { index ->
+                    val group = groups[index]
+                    selection.add(group)
                 }
-            )
-        }
+            }
+        )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectGroupsDialog.show()
-                }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_groups))
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_groups),
+        iconPlaceholder = false,
+        onClick = {
+            selectGroupsDialog.show()
+        },
+        descriptionColumnContent = {
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(
                         modifier = Modifier.padding(3.dp),
-                        onClick = { /*TODO*/ },
+                        onClick = {},
                         label = { Text(group.display) })
                 }
             }
         }
-
-    }
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -265,108 +234,105 @@ fun CapsPanel(
 
         val selection = HashSet(selected)
 
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        ) {
-            ListDialog(
-                state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                    closeSelection(selection)
-                }, onCloseRequest = {
-                    dismiss()
-                }),
-                header = Header.Default(
-                    title = stringResource(R.string.profile_capabilities),
-                ),
-                selection = ListSelection.Multiple(
-                    showCheckBoxes = true,
-                    options = options
-                ) { indecies, _ ->
-                    // Handle selection
-                    selection.clear()
-                    indecies.forEach { index ->
-                        val group = caps[index]
-                        selection.add(group)
-                    }
+        ListDialog(
+            state = rememberUseCaseState(visible = true, onFinishedRequest = {
+                closeSelection(selection)
+            }, onCloseRequest = {
+                dismiss()
+            }),
+            header = Header.Default(
+                title = stringResource(R.string.profile_capabilities),
+            ),
+            selection = ListSelection.Multiple(
+                showCheckBoxes = true,
+                options = options
+            ) { indecies, _ ->
+                // Handle selection
+                selection.clear()
+                indecies.forEach { index ->
+                    val group = caps[index]
+                    selection.add(group)
                 }
-            )
-        }
+            }
+        )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectCapabilitiesDialog.show()
-                }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_capabilities))
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_capabilities),
+        iconPlaceholder = false,
+        onClick = {
+            selectCapabilitiesDialog.show()
+        },
+        descriptionColumnContent = {
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(
                         modifier = Modifier.padding(3.dp),
-                        onClick = { /*TODO*/ },
+                        onClick = {},
                         label = { Text(group.display) })
                 }
             }
         }
-
-    }
+    )
 }
 
 @Composable
 private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
+    var lastValidText by remember { mutableStateOf(uid.toString()) }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-    ListItem(headlineContent = {
-        var isError by remember {
-            mutableStateOf(false)
+    val state = rememberTextFieldState(initialText = uid.toString())
+
+    SettingsTextFieldWidget(
+        modifier = Modifier
+            .fillMaxWidth(),
+        labelColor = MaterialTheme.colorScheme.onSurface,
+        title = label,
+        state = state,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        onKeyboardAction = {
+            keyboardController?.hide()
+        },
+    )
+
+    LaunchedEffect(state.text) {
+        val currentText = state.text.toString()
+
+        if (currentText.isEmpty()) {
+            lastValidText = ""
+            onUidChange(0)
+            return@LaunchedEffect
         }
-        var lastValidUid by remember {
-            mutableIntStateOf(uid)
-        }
-        val keyboardController = LocalSoftwareKeyboardController.current
 
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(label) },
-            value = uid.toString(),
-            isError = isError,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = {
-                keyboardController?.hide()
-            }),
-            onValueChange = {
-                if (it.isEmpty()) {
-                    onUidChange(0)
-                    return@OutlinedTextField
-                }
-                val valid = isTextValidUid(it)
-
-                val targetUid = if (valid) it.toInt() else lastValidUid
-                if (valid) {
-                    lastValidUid = it.toInt()
-                }
-
-                onUidChange(targetUid)
-
-                isError = !valid
+        if (isTextValidUid(currentText)) {
+            lastValidText = currentText
+            onUidChange(currentText.toInt())
+        } else {
+            state.edit {
+                replace(0, length, lastValidText)
             }
-        )
-    })
+        }
+    }
+}
+@Composable
+fun MountNameSpacePanel(
+    profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit
+) {
+    SettingsDropdownWidget(
+        iconPlaceholder = false,
+        title = stringResource(id = R.string.profile_namespace), items = listOf(
+            stringResource(id = R.string.profile_namespace_inherited),
+            stringResource(id = R.string.profile_namespace_global),
+            stringResource(id = R.string.profile_namespace_individual),
+        ), selectedIndex = profile.namespace, onSelectedIndexChange = { index ->
+            onMntNamespaceChange(index)
+        })
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SELinuxPanel(
     profile: Natives.Profile,
@@ -418,64 +384,46 @@ private fun SELinuxPanel(
             )
         )
 
-
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
+        InputDialog(
+            state = rememberUseCaseState(visible = true,
+                onFinishedRequest = {
+                    onSELinuxChange(domain, rules)
+                },
+                onCloseRequest = {
+                    dismiss()
+                }),
+            header = Header.Default(
+                title = stringResource(R.string.profile_selinux_context),
+            ),
+            selection = InputSelection(
+                input = inputOptions
             )
-        ) {
-            InputDialog(
-                state = rememberUseCaseState(
-                    visible = true,
-                    onFinishedRequest = {
-                        onSELinuxChange(domain, rules)
-                    },
-                    onCloseRequest = {
-                        dismiss()
-                    }),
-                header = Header.Default(
-                    title = stringResource(R.string.profile_selinux_context),
-                ),
-                selection = InputSelection(
-                    input = inputOptions,
-                    onPositiveClick = { result ->
-                        // Handle selection
-                    },
-                )
-            )
-        }
+        )
     }
 
-    ListItem(headlineContent = {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    editSELinuxDialog.show()
-                },
-            enabled = false,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            label = { Text(text = stringResource(R.string.profile_selinux_context)) },
-            value = profile.context,
-            onValueChange = { }
-        )
-    })
+    SettingsJumpPageWidget(
+        title = stringResource(R.string.profile_selinux_context),
+        iconPlaceholder = false,
+        description = profile.context,
+        onClick = {
+            editSELinuxDialog.show()
+        }
+    )
 }
 
 @Preview
 @Composable
 private fun RootProfileConfigPreview() {
     var profile by remember { mutableStateOf(Natives.Profile("")) }
-    RootProfileConfig(fixedName = true, profile = profile) {
+    RootProfileConfig(profile = profile) {
         profile = it
     }
 }
 
 private fun isTextValidUid(text: String): Boolean {
-    return text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0
+    return try {
+        text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0
+    } catch (_: Throwable) {
+        false
+    }
 }

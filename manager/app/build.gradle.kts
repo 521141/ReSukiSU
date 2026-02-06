@@ -1,11 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import com.android.build.gradle.tasks.PackageAndroidArtifact
-
 plugins {
     alias(libs.plugins.agp.app)
-    alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.lsplugin.apksign)
@@ -14,9 +10,15 @@ plugins {
 
 }
 
+val androidCompileSdkVersion: Int by rootProject.extra
+val androidCompileNdkVersion: String by rootProject.extra
+val androidBuildToolsVersion: String by rootProject.extra
+val androidMinSdkVersion: Int by rootProject.extra
+val androidTargetSdkVersion: Int by rootProject.extra
+val androidSourceCompatibility: JavaVersion by rootProject.extra
+val androidTargetCompatibility: JavaVersion by rootProject.extra
 val managerVersionCode: Int by rootProject.extra
 val managerVersionName: String by rootProject.extra
-val androidCmakeVersion: String by rootProject.extra
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -25,29 +27,51 @@ apksign {
     keyPasswordProperty = "KEY_PASSWORD"
 }
 
+val baseCFlags = listOf(
+    "-Wall", "-Qunused-arguments", "-fvisibility=hidden", "-fvisibility-inlines-hidden",
+    "-fno-exceptions", "-fno-stack-protector", "-fomit-frame-pointer",
+    "-Wno-builtin-macro-redefined", "-Wno-unused-value", "-D__FILE__=__FILE_NAME__"
+)
+val baseCppFlags = baseCFlags + "-fno-rtti"
 
 android {
-
-    /**signingConfigs {
-        create("Debug") {
-            storeFile = file("D:\\other\\AndroidTool\\android_key\\keystore\\release-key.keystore")
-            storePassword = ""
-            keyAlias = ""
-            keyPassword = ""
-        }
-    }**/
     namespace = "com.resukisu.resukisu"
 
     buildTypes {
+        debug {
+            externalNativeBuild {
+                cmake {
+                    arguments += listOf("-DCMAKE_CXX_FLAGS_DEBUG=-Og", "-DCMAKE_C_FLAGS_DEBUG=-Og")
+                }
+            }
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             vcsInfo.include = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DDEBUG_SYMBOLS_PATH=${layout.buildDirectory.get().asFile.absolutePath}/symbols"
+                    arguments += "-DCMAKE_BUILD_TYPE=Release"
+
+                    val releaseFlags = listOf(
+                        "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections",
+                        "-fno-unwind-tables", "-fno-asynchronous-unwind-tables", "-Wl,--exclude-libs,ALL"
+                    )
+                    val configFlags = listOf("-Oz", "-DNDEBUG").joinToString(" ")
+
+                    cppFlags += releaseFlags
+                    cFlags += releaseFlags
+
+                    arguments += listOf(
+                        "-DCMAKE_CXX_FLAGS_RELEASE=$configFlags",
+                        "-DCMAKE_C_FLAGS_RELEASE=$configFlags",
+                        "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--gc-sections -Wl,--exclude-libs,ALL -Wl,--icf=all -s -Wl,--hash-style=sysv -Wl,-z,norelro"
+                    )
+                }
+            }
         }
-        /**debug {
-            signingConfig = signingConfigs.named("Debug").get() as ApkSigningConfig
-        }**/
     }
 
     buildFeatures {
@@ -75,25 +99,7 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = androidCmakeVersion
         }
-    }
-
-    applicationVariants.all {
-        outputs.forEach {
-            val output = it as BaseVariantOutputImpl
-            output.outputFileName = "ReSukiSU_${managerVersionName}_${managerVersionCode}-$name.apk"
-        }
-        kotlin.sourceSets {
-            getByName(name) {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
-            }
-        }
-    }
-
-    // https://stackoverflow.com/a/77745844
-    tasks.withType<PackageAndroidArtifact> {
-        doFirst { appMetadata.asFile.orNull?.writeText("") }
     }
 
     dependenciesInfo {
@@ -104,6 +110,45 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
+
+    compileSdk = androidCompileSdkVersion
+    ndkVersion = androidCompileNdkVersion
+    buildToolsVersion = androidBuildToolsVersion
+
+    defaultConfig {
+        minSdk = androidMinSdkVersion
+        targetSdk = androidTargetSdkVersion
+        versionCode = managerVersionCode
+        versionName = managerVersionName
+
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_STL=none"
+                cFlags += baseCFlags + "-std=c2x"
+                cppFlags += baseCppFlags + "-std=c++2b"
+            }
+        }
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64", "armeabi-v7a")
+        }
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = false
+    }
+
+    compileOptions {
+        sourceCompatibility = androidSourceCompatibility
+        targetCompatibility = androidTargetCompatibility
+    }
+}
+
+base {
+    archivesName.set(
+        "ReSukiSU_${managerVersionName}_${managerVersionCode}"
+    )
 }
 
 ksp {
@@ -117,7 +162,6 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)
-    implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -125,6 +169,7 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.androidx.compose.foundation)
 
+    implementation(libs.androidx.compose.runtime.tracing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
@@ -138,6 +183,11 @@ dependencies {
     implementation(libs.com.github.topjohnwu.libsu.core)
     implementation(libs.com.github.topjohnwu.libsu.service)
     implementation(libs.com.github.topjohnwu.libsu.io)
+
+    implementation(libs.m3color)
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
+    implementation(libs.capsule)
 
     implementation(libs.dev.rikka.rikkax.parcelablelist)
 

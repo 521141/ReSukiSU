@@ -1,28 +1,59 @@
 package com.resukisu.resukisu.ui.screen
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
-import androidx.compose.animation.*
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -40,16 +71,29 @@ import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScr
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
-import com.resukisu.resukisu.ui.component.SwitchItem
 import com.resukisu.resukisu.ui.component.profile.AppProfileConfig
 import com.resukisu.resukisu.ui.component.profile.RootProfileConfig
 import com.resukisu.resukisu.ui.component.profile.TemplateConfig
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
+import com.resukisu.resukisu.ui.component.settings.SettingsBaseWidget
+import com.resukisu.resukisu.ui.component.settings.SettingsSwitchWidget
+import com.resukisu.resukisu.ui.component.settings.SplicedColumnGroup
 import com.resukisu.resukisu.ui.theme.CardConfig
-import com.resukisu.resukisu.ui.theme.getCardColors
-import com.resukisu.resukisu.ui.theme.getCardElevation
-import com.resukisu.resukisu.ui.util.*
+import com.resukisu.resukisu.ui.theme.ThemeConfig
+import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.forceStopApp
+import com.resukisu.resukisu.ui.util.getSepolicy
+import com.resukisu.resukisu.ui.util.launchApp
+import com.resukisu.resukisu.ui.util.restartApp
+import com.resukisu.resukisu.ui.util.setSepolicy
 import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
 import com.resukisu.resukisu.ui.viewmodel.getTemplateInfoById
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 
 /**
@@ -61,18 +105,21 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppProfileScreen(
     navigator: DestinationsNavigator,
-    appInfo: SuperUserViewModel.AppInfo,
+    appGroup: SuperUserViewModel.AppGroup,
 ) {
     val context = LocalContext.current
     val snackBarHost = LocalSnackbarHost.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scope = rememberCoroutineScope()
-    val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
-    val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
-    val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
+    val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(
+        appGroup.mainApp.label
+    )
+    val failToUpdateSepolicy =
+        stringResource(R.string.failed_to_update_sepolicy).format(appGroup.mainApp.label)
+    val suNotAllowed = stringResource(R.string.su_not_allowed).format(appGroup.mainApp.label)
 
-    val packageName = appInfo.packageName
-    val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
+    val packageName = appGroup.mainApp.packageName
+    val initialProfile = Natives.getAppProfile(packageName, appGroup.uid)
     if (initialProfile.allowSu) {
         initialProfile.rules = getSepolicy(packageName)
     }
@@ -82,39 +129,43 @@ fun AppProfileScreen(
 
     val colorScheme = MaterialTheme.colorScheme
     val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
+        Color.Transparent
     } else {
-        colorScheme.background
+        colorScheme.surfaceContainer
     }
-    val cardAlpha = CardConfig.cardAlpha
+
+    val hazeState = if (CardConfig.isCustomBackgroundEnabled) rememberHazeState() else null
 
     Scaffold(
         topBar = {
             TopBar(
-                title = appInfo.label,
+                title = appGroup.mainApp.label,
                 packageName = packageName,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = cardColor.copy(alpha = cardAlpha),
-                    scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+                    containerColor = cardColor,
+                    scrolledContainerColor = cardColor
                 ),
                 onBack = dropUnlessResumed { navigator.popBackStack() },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHost) },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         AppProfileInner(
-            modifier = Modifier
-                .padding(paddingValues)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState()),
-            packageName = appInfo.packageName,
-            appLabel = appInfo.label,
+            modifier = (if (hazeState != null) Modifier.hazeSource(hazeState) else Modifier)
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            topPadding = paddingValues.calculateTopPadding(),
+            appGroup = appGroup,
             appIcon = {
                 AsyncImage(
-                    model = ImageRequest.Builder(context).data(appInfo.packageInfo).crossfade(true).build(),
-                    contentDescription = appInfo.label,
+                    model = ImageRequest.Builder(context).data(appGroup.mainApp.packageInfo)
+                        .crossfade(true).build(),
+                    contentDescription = appGroup.mainApp.label,
                     modifier = Modifier
                         .padding(4.dp)
                         .width(48.dp)
@@ -134,7 +185,7 @@ fun AppProfileScreen(
                 scope.launch {
                     if (it.allowSu) {
                         // sync with allowlist.c - forbid_system_uid
-                        if (appInfo.uid < 2000 && appInfo.uid != 1000) {
+                        if (appGroup.uid < 2000 && appGroup.uid != 1000) {
                             snackBarHost.showSnackbar(suNotAllowed)
                             return@launch
                         }
@@ -144,7 +195,7 @@ fun AppProfileScreen(
                         }
                     }
                     if (!Natives.setAppProfile(it)) {
-                        snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
+                        snackBarHost.showSnackbar(failToUpdateAppProfile.format(appGroup.uid))
                     } else {
                         profile = it
                     }
@@ -154,11 +205,12 @@ fun AppProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AppProfileInner(
     modifier: Modifier = Modifier,
-    packageName: String,
-    appLabel: String,
+    topPadding: Dp,
+    appGroup: SuperUserViewModel.AppGroup,
     appIcon: @Composable () -> Unit,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
@@ -166,65 +218,105 @@ private fun AppProfileInner(
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = profile.allowSu
-    val cardColors = getCardColors(MaterialTheme.colorScheme.surfaceContainerHigh)
 
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme.copy(
-            surface = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    ) {
-        Column(modifier = modifier) {
-            ElevatedCard(
+    LazyColumn(modifier = modifier) {
+        item {
+            Spacer(modifier = Modifier.height(topPadding))
+        }
+
+        item {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = MaterialTheme.shapes.medium,
-                colors = cardColors,
-                elevation = getCardElevation(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                    alpha = CardConfig.cardAlpha
+                ),
+                contentColor = MaterialTheme.colorScheme.onSurface,
             ) {
-                AppMenuBox(packageName) {
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                text = appLabel,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        },
-                        supportingContent = {
-                            Text(
-                                text = packageName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                        leadingContent = appIcon,
+                var expanded by remember { mutableStateOf(false) }
+                var touchPoint: Offset by remember { mutableStateOf(Offset.Zero) }
+                val density = LocalDensity.current
+
+                SettingsBaseWidget(
+                    title = appGroup.mainApp.label,
+                    description = appGroup.mainApp.packageName,
+                    iconPlaceholder = false,
+                    rowHeader = {
+                        appIcon()
+                    },
+                    onClick = {
+                        touchPoint = it
+                        expanded = true
+                    }
+                ) {}
+
+                val (offsetX, offsetY) = with(density) {
+                    (touchPoint.x.toDp()) to (-touchPoint.y.toDp())
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    offset = DpOffset(offsetX, offsetY),
+                    onDismissRequest = {
+                        expanded = false
+                    }
+                ) {
+                    AppMenuOption(
+                        text = stringResource(id = R.string.launch_app),
+                        onClick = {
+                            expanded = false
+                            launchApp(appGroup.mainApp.packageName)
+                        }
+                    )
+
+                    AppMenuOption(
+                        text = stringResource(id = R.string.force_stop_app),
+                        onClick = {
+                            expanded = false
+                            forceStopApp(appGroup.mainApp.packageName)
+                        }
+                    )
+
+                    AppMenuOption(
+                        text = stringResource(id = R.string.restart_app),
+                        onClick = {
+                            expanded = false
+                            restartApp(appGroup.mainApp.packageName)
+                        }
                     )
                 }
             }
+        }
 
-            ElevatedCard(
+        item {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = MaterialTheme.shapes.medium,
-                colors = cardColors,
-                elevation = getCardElevation(),
-            ) {
-                SwitchItem(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                    alpha = CardConfig.cardAlpha
+                ),
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            )
+            {
+                SettingsSwitchWidget(
                     icon = Icons.Filled.Security,
                     title = stringResource(id = R.string.superuser),
                     checked = isRootGranted,
                     onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
                 )
             }
+        }
 
+        item {
             Crossfade(
                 targetState = isRootGranted,
                 label = "RootAccess"
-            ) { current ->
-                Column(
-                    modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
-                ) {
+            )
+            { current ->
+                Column {
                     if (current) {
                         val initialMode = if (profile.rootUseDefault) {
                             Mode.Default
@@ -237,13 +329,16 @@ private fun AppProfileInner(
                             mutableStateOf(initialMode)
                         }
 
-                        ElevatedCard(
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = cardColors,
-                            elevation = getCardElevation(),
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                alpha = CardConfig.cardAlpha
+                            ),
+                            contentColor = MaterialTheme.colorScheme.onSurface,
                         ) {
                             ProfileBox(mode, true) {
                                 // template mode shouldn't change profile here!
@@ -264,21 +359,23 @@ private fun AppProfileInner(
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically()
                         ) {
-                            ElevatedCard(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = cardColors,
-                                elevation = getCardElevation(),
-                            ) {
-                                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                    Crossfade(
-                                        targetState = mode,
-                                        label = "ProfileMode"
-                                    ) { currentMode ->
-                                        when (currentMode) {
-                                            Mode.Template -> {
+                            Crossfade(
+                                targetState = mode,
+                                label = "ProfileMode"
+                            ) { currentMode ->
+                                when (currentMode) {
+                                    Mode.Template -> {
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                alpha = CardConfig.cardAlpha
+                                            ),
+                                            contentColor = MaterialTheme.colorScheme.onSurface,
+                                        ) {
+                                            Column {
                                                 TemplateConfig(
                                                     profile = profile,
                                                     onViewTemplate = onViewTemplate,
@@ -286,31 +383,33 @@ private fun AppProfileInner(
                                                     onProfileChange = onProfileChange
                                                 )
                                             }
-
-                                            Mode.Custom -> {
-                                                RootProfileConfig(
-                                                    fixedName = true,
-                                                    profile = profile,
-                                                    onProfileChange = onProfileChange
-                                                )
-                                            }
-
-                                            else -> {}
                                         }
                                     }
+
+                                    Mode.Custom -> {
+                                        RootProfileConfig(
+                                            profile = profile,
+                                            onProfileChange = onProfileChange
+                                        )
+                                    }
+
+                                    else -> {}
                                 }
                             }
                         }
                     } else {
                         val mode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
 
-                        ElevatedCard(
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = cardColors,
-                            elevation = getCardElevation(),
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                alpha = CardConfig.cardAlpha
+                            ),
+                            contentColor = MaterialTheme.colorScheme.onSurface,
                         ) {
                             ProfileBox(mode, false) {
                                 onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
@@ -322,27 +421,65 @@ private fun AppProfileInner(
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically()
                         ) {
-                            ElevatedCard(
+                            Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = cardColors,
-                                elevation = getCardElevation(),
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 8.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                    alpha = CardConfig.cardAlpha
+                                ),
+                                contentColor = MaterialTheme.colorScheme.onSurface,
                             ) {
-                                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                                    AppProfileConfig(
-                                        fixedName = true,
-                                        profile = profile,
-                                        enabled = mode == Mode.Custom,
-                                        onProfileChange = onProfileChange
-                                    )
-                                }
+                                AppProfileConfig(
+                                    enabled = mode == Mode.Custom,
+                                    profile = profile,
+                                    onProfileChange = onProfileChange
+                                )
                             }
                         }
                     }
                 }
             }
+        }
+
+        if (appGroup.apps.size > 1) {
+            item {
+                SplicedColumnGroup(
+                    title = stringResource(R.string.affected_applications)
+                ) {
+                    appGroup.apps.forEach { app ->
+                        item {
+                            val context = LocalContext.current
+
+                            SettingsBaseWidget(
+                                modifier = Modifier.padding(vertical = 5.dp),
+                                title = app.label,
+                                description = app.packageName,
+                                enabled = false,
+                                iconPlaceholder = false,
+                                noVerticalPadding = true,
+                                rowHeader = {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context).data(app.packageInfo)
+                                            .crossfade(true).build(),
+                                        contentDescription = app.label,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .width(48.dp)
+                                            .height(48.dp)
+                                    )
+                                },
+                            ) {}
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(6.dp + 48.dp + 6.dp /* SnackBar height */))
         }
     }
 }
@@ -354,48 +491,54 @@ private enum class Mode(@param:StringRes private val res: Int) {
         @Composable get() = stringResource(res)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     title: String,
     packageName: String,
     onBack: () -> Unit,
     colors: TopAppBarColors,
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    hazeState: HazeState? = null
 ) {
-    TopAppBar(
+    val hazeStyle = if (ThemeConfig.backgroundImageLoaded) HazeStyle(
+        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+            alpha = 0.8f
+        ),
+        tint = HazeTint(Color.Transparent)
+    ) else null
+
+    val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
+    val modifier = if (ThemeConfig.backgroundImageLoaded && hazeStyle != null && hazeState != null) {
+        Modifier.hazeEffect(hazeState) {
+            style = hazeStyle
+            noiseFactor = 0f
+            blurRadius = 30.dp
+            alpha = collapsedFraction
+        }
+    }
+    else Modifier
+
+    LargeFlexibleTopAppBar(
+        modifier = modifier,
         title = {
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = packageName,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.alpha(0.8f)
-                )
-            }
+            Text(
+                text = title,
+            )
+        },
+        subtitle = {
+            Text(
+                text = packageName
+            )
         },
         colors = colors,
         navigationIcon = {
-            IconButton(
-                onClick = onBack,
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back)
-                )
-            }
+            AppBackButton(
+                onClick = onBack
+            )
         },
-        windowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-        ),
+        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
         scrollBehavior = scrollBehavior,
-        modifier = Modifier.shadow(
-            elevation = if ((scrollBehavior?.state?.overlappedFraction ?: 0f) > 0.01f)
-                4.dp else 0.dp,
-        )
     )
 }
 
@@ -405,140 +548,55 @@ private fun ProfileBox(
     hasTemplate: Boolean,
     onModeChange: (Mode) -> Unit,
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = stringResource(R.string.profile),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = mode.text,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = null,
-                )
-            },
-        )
+    Column {
+        SettingsBaseWidget(
+            icon = Icons.Filled.AccountCircle,
+            title = stringResource(R.string.profile),
+            description = mode.text,
+        ) {}
 
-        HorizontalDivider(
-            thickness = Dp.Hairline,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         )
-
-        ListItem(
-            headlineContent = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    FilterChip(
-                        selected = mode == Mode.Default,
-                        onClick = { onModeChange(Mode.Default) },
-                        label = {
-                            Text(
-                                text = stringResource(R.string.profile_default),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        shape = MaterialTheme.shapes.small
+        {
+            FilterChip(
+                selected = mode == Mode.Default,
+                onClick = { onModeChange(Mode.Default) },
+                label = {
+                    Text(
+                        text = stringResource(R.string.profile_default),
+                        style = MaterialTheme.typography.bodyMedium
                     )
+                },
+                shape = MaterialTheme.shapes.medium,
+            )
 
-                    if (hasTemplate) {
-                        FilterChip(
-                            selected = mode == Mode.Template,
-                            onClick = { onModeChange(Mode.Template) },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.profile_template),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            },
-                            shape = MaterialTheme.shapes.small
+            if (hasTemplate) {
+                FilterChip(
+                    selected = mode == Mode.Template,
+                    onClick = { onModeChange(Mode.Template) },
+                    label = {
+                        Text(
+                            text = stringResource(R.string.profile_template),
+                            style = MaterialTheme.typography.bodyMedium
                         )
-                    }
-
-                    FilterChip(
-                        selected = mode == Mode.Custom,
-                        onClick = { onModeChange(Mode.Custom) },
-                        label = {
-                            Text(
-                                text = stringResource(R.string.profile_custom),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        shape = MaterialTheme.shapes.small
-                    )
-                }
-            }
-        )
-    }
-}
-
-@SuppressLint("UnusedBoxWithConstraintsScope")
-@Composable
-private fun AppMenuBox(
-    packageName: String,
-    content: @Composable () -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var touchPoint: Offset by remember { mutableStateOf(Offset.Zero) }
-    val density = LocalDensity.current
-
-    BoxWithConstraints(
-        Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        touchPoint = it
-                        expanded = true
-                    }
+                    },
+                    shape = MaterialTheme.shapes.medium,
                 )
             }
-    ) {
-        content()
 
-        val (offsetX, offsetY) = with(density) {
-            (touchPoint.x.toDp()) to (-touchPoint.y.toDp())
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            offset = DpOffset(offsetX, offsetY),
-            onDismissRequest = {
-                expanded = false
-            }
-        ) {
-            AppMenuOption(
-                text = stringResource(id = R.string.launch_app),
-                onClick = {
-                    expanded = false
-                    launchApp(packageName)
-                }
-            )
-
-            AppMenuOption(
-                text = stringResource(id = R.string.force_stop_app),
-                onClick = {
-                    expanded = false
-                    forceStopApp(packageName)
-                }
-            )
-
-            AppMenuOption(
-                text = stringResource(id = R.string.restart_app),
-                onClick = {
-                    expanded = false
-                    restartApp(packageName)
-                }
+            FilterChip(
+                selected = mode == Mode.Custom,
+                onClick = { onModeChange(Mode.Custom) },
+                label = {
+                    Text(
+                        text = stringResource(R.string.profile_custom),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                shape = MaterialTheme.shapes.medium,
             )
         }
     }
@@ -561,26 +619,23 @@ private fun AppMenuOption(text: String, onClick: () -> Unit) {
 @Composable
 private fun AppProfilePreview() {
     var profile by remember { mutableStateOf(Natives.Profile("")) }
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme.copy(
-            surface = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+
+    Surface(
+        color = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
-        Surface {
-            AppProfileInner(
-                packageName = "icu.nullptr.test",
-                appLabel = "Test",
-                appIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Android,
-                        contentDescription = null,
-                    )
-                },
-                profile = profile,
-                onProfileChange = {
-                    profile = it
-                },
-            )
-        }
+        AppProfileInner(
+            appGroup = SuperUserViewModel.AppGroup(0, emptyList(), null),
+            appIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Android,
+                    contentDescription = null,
+                )
+            },
+            profile = profile,
+            topPadding = 0.dp,
+            onProfileChange = {
+                profile = it
+            },
+        )
     }
 }

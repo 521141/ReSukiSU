@@ -77,6 +77,8 @@
     <string name="module_changelog">Journal des modifications</string>
     <string name="settings_profile_template">Modèles de profils d\'application</string>
     <string name="settings_profile_template_summary">Gérer les modèles de profils d\'application locaux et en ligne</string>
+    <string name="settings_check_update">Notifications de mise à jour</string>
+    <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour du module et du gestionnaire</string>
     <string name="app_profile_template_create">Créer un modèle</string>
     <string name="app_profile_template_edit">Modifier le modèle</string>
     <string name="app_profile_template_id">ID</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">Échec de l\'enregistrement du modèle</string>
     <string name="app_profile_template_import_empty">Le presse-papiers est vide !</string>
     <string name="module_changelog_failed">Échec de récupération du journal des modifications : %s</string>
-    <string name="settings_check_update">Vérifier les mises à jour</string>
-    <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour à l\'ouverture de l\'application</string>
     <string name="grant_root_failed">Échec de l\'octroi des privilèges root !</string>
     <string name="action">Action</string>
     <string name="close">Fermer</string>
@@ -135,10 +135,6 @@
     <string name="confirm">Confirmer</string>
     <string name="cancel">Annuler</string>
     <!-- Backup related -->
-    <string name="backup_success">Sauvegarde réussie (tar.gz)</string>
-    <string name="backup_failed">Échec de la sauvegarde : %1$s</string>
-    <string name="backup_modules">modules de sauvegarde</string>
-    <string name="restore_modules">Restaurer les modules</string>
     <!-- Restore related messages -->
     <string name="restore_success">Succès de la sauvegarde, redémarrer</string>
     <string name="restore_failed">Échec de la restauration : %1$s</string>
@@ -157,12 +153,9 @@
     <string name="restore_allowlist">Restaurer la liste blanche</string>
     <string name="settings_custom_background">Arrière-plan personnalisé de l\'application</string>
     <string name="settings_custom_background_summary">Image as arrière-plan</string>
-    <string name="settings_card_alpha">Transparence de la barre de navigation</string>
     <string name="home_android_version">Version Android</string>
     <string name="home_device_model">Modèle du téléphone</string>
     <string name="su_not_allowed">Donner un super-utilisateur à %s n\'est pas autorisé</string>
-    <string name="settings_disable_su">Désactiver la compatibilité su</string>
-    <string name="settings_disable_su_summary">Désactiver temporairement l\'accès des applications aux privilèges root via la commande su (les processus root existants ne seront pas affectés).</string>
     <string name="module_install_multiple_confirm_with_names">Êtes-vous sûr de vouloir installer les modules %1$d suivants ? \n\n%2$s</string>
     <string name="more_settings">Autres configurations</string>
     <string name="selinux">SELinux</string>
@@ -215,13 +208,11 @@
     <string name="home_kpm_version">Version de KPM</string>
     <string name="close_notice">Fermer</string>
     <string name="kernel_module_notice">Les fonctions suivantes du module du noyau ont été développées par KernelPatch et modifiées pour inclure les fonctions du module du noyau de SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra attend avec impatience</string>
     <string name="kpm_control_success">Succès</string>
     <string name="kpm_control_failed">Echoué</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra sera une branche relativement indépendante de KSU dans le futur, mais nous apprécions toujours le KernelSU officiel, MKSU etc. pour leurs contributions!</string>
-    <string name="not_supported">Non pris en charge</string>
-    <string name="supported">Pris en charge</string>
-    <string name="kernel_patched">Noyau non corrigé</string>
+    <string name="kpm_not_supported">Non pris en charge (%s)</string>
+    <string name="kpm_supported">Pris en charge (%s)</string>
+    <string name="kernel_not_patched">Noyau non corrigé</string>
     <string name="kernel_not_enabled">Noyau non configuré</string>
     <string name="custom_settings">Paramètres personnalisés</string>
     <string name="kpm_install_mode">KPM Installé</string>
@@ -284,10 +275,6 @@
     <string name="show_kpm_info">Afficher la fonction KPM</string>
     <string name="show_kpm_info_summary">Masque les informations et fonctions KPM dans la barre d\'accueil et en bas</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Sélectionnez le moteur WebUI à utiliser</string>
-    <string name="engine_auto_select">Sélectionner automatiquement</string>
-    <string name="engine_force_webuix">Forcer l\'utilisation de WebUI X</string>
-    <string name="engine_force_ksu">Utilisation obligatoire de KSU WebUI</string>
     <string name="use_webuix_eruda">Injecter Eruda dans WebUI X</string>
     <string name="use_webuix_eruda_summary">Injectez une console de débogage dans WebUI X pour faciliter le débogage. Nécessite que le débogage soit activé.</string>
     <!-- DPI setting related strings -->
@@ -306,7 +293,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Langue de l\'application</string>
     <string name="language_system_default">Suivre le paramètre système</string>
-    <string name="settings_card_dim">Ajustement de l\'obscurité de la carte</string>
     <!-- Flash related -->
     <string name="error_code">code d\'erreur</string>
     <string name="check_log">Veuillez vérifier le journal</string>
@@ -345,20 +331,8 @@
     <string name="menu_options">Menu Options</string>
     <string name="sort_options">Sort by</string>
     <string name="app_categories">Application Type Selection</string>
-    <!-- SuSFS Configuration -->
-    <!-- SuSFS Reset Confirmation -->
-    <!-- SuSFS Toast Messages -->
-    <!-- SuSFS Settings Item -->
-    <!-- 开机自启动相关 -->
-    <!-- SuSFS Tab Titles -->
-    <!-- SuSFS Dialog Actions -->
-    <!-- SuSFS Path Management -->
-    <!-- SuSFS Umount Mode -->
-    <!-- SuSFS Run Umount -->
-    <!-- SuSFS Reset Categories -->
-    <!-- SuSFS Path Settings -->
-    <!-- SuSFS Enabled Features -->
-    <!-- Feature Labels -->
-    <!-- 可切换状态 -->
-    <!-- Settings related strings -->
+    <string name="settings_sucompat">Rediriger le binaire su</string>
+    <string name="settings_sucompat_summary">Permet aux applications ayant l\'autorisation Superutilisateur dans le profil d\'application d\'obtenir un shell superutilisateur en exécutant /system/bin/su; effectif uniquement pour les nouveaux processus.</string>
+    <string name="settings_kernel_umount">Démontage du noyau</string>
+    <string name="settings_kernel_umount_summary">Comportement de démontage au niveau du noyau contrôlé par KernelSU</string>
 </resources>

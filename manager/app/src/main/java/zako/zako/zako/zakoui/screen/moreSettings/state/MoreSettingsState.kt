@@ -2,18 +2,17 @@ package zako.zako.zako.zakoui.screen.moreSettings.state
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import zako.zako.zako.zakoui.screen.moreSettings.util.LocaleHelper
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ui.theme.CardConfig
 import com.resukisu.resukisu.ui.theme.ThemeConfig
+import zako.zako.zako.zakoui.screen.moreSettings.util.LocaleHelper
 
 /**
  * 更多设置状态管理
@@ -41,10 +40,8 @@ class MoreSettingsState(
     var currentAppLocale by mutableStateOf(LocaleHelper.getCurrentAppLocale(context))
 
     // 对话框显示状态
-    var showThemeModeDialog by mutableStateOf(false)
     var showThemeColorDialog by mutableStateOf(false)
     var showDpiConfirmDialog by mutableStateOf(false)
-    var showImageEditor by mutableStateOf(false)
 
     // 动态管理器配置状态
     var dynamicSignConfig by mutableStateOf<Natives.DynamicManagerConfig?>(null)
@@ -73,11 +70,8 @@ class MoreSettingsState(
 
     // 卡片配置状态
     var cardAlpha by mutableFloatStateOf(CardConfig.cardAlpha)
-    var cardDim by mutableFloatStateOf(CardConfig.cardDim)
+    var backgroundDim by mutableFloatStateOf(ThemeConfig.backgroundDim)
     var isCustomBackgroundEnabled by mutableStateOf(ThemeConfig.customBackgroundUri != null)
-
-    // 图片选择状态
-    var selectedImageUri by mutableStateOf<Uri?>(null)
 
     // DPI 设置
     val systemDpi = context.resources.displayMetrics.densityDpi

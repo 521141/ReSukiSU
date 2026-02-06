@@ -71,4 +71,10 @@
     <string name="home_manager_version">גרסת מנהל</string>
     <string name="new_version_available">גרסה חדשה עבור: %s זמינה, לחץ כדי לשדרג</string>
     <string name="save_log">שמור יומנים</string>
+    <string name="settings_check_update">התראות עדכון</string>
+    <string name="settings_check_update_summary">בדוק אוטומטית אם יש עדכונים למודולים ולמנהל</string>
+    <string name="settings_sucompat">ניתוב מחדש של su binary</string>
+    <string name="settings_sucompat_summary">הפנה מחדש את /system/bin/su ל-ksud עבור אפליקציות שקיבלו הרשאת Superuser בפרופיל האפליקציה; יעיל לתהליכים חדשים בלבד.</string>
+    <string name="settings_kernel_umount">ביטול טעינת קרנל</string>
+    <string name="settings_kernel_umount_summary">התנהגות ביטול טעינה ברמת הקרנל הנשלטת על ידי KernelSU</string>
 </resources>

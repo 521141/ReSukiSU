@@ -21,7 +21,9 @@
     <string name="module_failed_to_disable">无法禁用模块：%s</string>
     <string name="module_empty">没有安装模块</string>
     <string name="module">模块</string>
+    <string name="module_repo">模块仓库</string>
     <string name="module_sort_action_first">排序（可执行优先）</string>
+    <string name="module_sort_star_first">排序 (星标数优先)</string>
     <string name="module_sort_enabled_first">排序（已启用优先）</string>
     <string name="uninstall">卸载</string>
     <string name="module_install">安装</string>
@@ -57,6 +59,10 @@
     <string name="profile_template">模版</string>
     <string name="profile_custom">自定义</string>
     <string name="profile_name">名称</string>
+    <string name="profile_namespace">挂载命名空间</string>
+    <string name="profile_namespace_inherited">继承</string>
+    <string name="profile_namespace_global">全局</string>
+    <string name="profile_namespace_individual">独立</string>
     <string name="profile_groups">组</string>
     <string name="profile_capabilities">权能</string>
     <string name="profile_selinux_context">SELinux</string>
@@ -71,6 +77,7 @@
     <string name="module_update">更新</string>
     <string name="module_downloading">正在下载模块：%s</string>
     <string name="module_start_downloading">开始下载：%s</string>
+    <string name="module_action_success">模块Action脚本执行成功.</string>
     <string name="new_version_available">发现新版本：%s，点击升级。</string>
     <string name="launch_app">启动</string>
     <string name="force_stop_app" formatted="false">强制停止</string>
@@ -98,9 +105,11 @@
     <string name="app_profile_template_sync">同步在线规则</string>
     <string name="app_profile_template_save_failed">模版保存失败</string>
     <string name="app_profile_template_import_empty">剪切板为空！</string>
+    <string name="affected_applications">受影响的应用</string>
     <string name="module_changelog_failed">获取更新日志失败：%s</string>
-    <string name="settings_check_update">检查更新</string>
-    <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版</string>
+    <string name="settings_check_update">更新提醒</string>
+    <string name="settings_check_update_summary">自动检查模块和管理器更新</string>
+    <string name="debug_version_notice">"你正在使用管理器的 DEBUG 构建，如果你不知道什么是 DEBUG 构建，请立即切换至 RELEASE 构建"</string>
     <string name="grant_root_failed">获取 root 失败！</string>
     <string name="action">执行</string>
     <string name="close">关闭</string>
@@ -138,10 +147,6 @@
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
     <!-- Backup related -->
-    <string name="backup_success">备份成功 (tar.gz)</string>
-    <string name="backup_failed">备份失败：%1$s</string>
-    <string name="backup_modules">备份模块</string>
-    <string name="restore_modules">恢复模块</string>
     <!-- Restore related messages -->
     <string name="restore_success">模块已成功还原，需重启生效</string>
     <string name="restore_failed">还原失败：%1$s</string>
@@ -164,17 +169,18 @@
     <string name="home_android_version">Android 版本</string>
     <string name="home_device_model">设备</string>
     <string name="su_not_allowed">不允许授予 %s 超级用户权限</string>
-    <string name="settings_disable_su">禁用 su 兼容性</string>
-    <string name="settings_disable_su_summary">禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）。</string>
-    <string name="settings_disable_kernel_umount">关闭内核 umount</string>
-    <string name="settings_disable_kernel_umount_summary">关闭 KernelSU 控制的内核级 umount 行为。</string>
-    <string name="settings_enable_enhanced_security">增强安全性</string>
-    <string name="settings_enable_enhanced_security_summary">使用更严格的安全策略。</string>
+    <string name="settings_mode_enable_by_default">启用（默认）</string>
+    <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
+    <string name="settings_mode_disable_always">始终禁用</string>
+    <string name="settings_sucompat">传统 su 命令支持</string>
+    <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
+    <string name="settings_kernel_umount">内核处理卸载模块</string>
+    <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块</string>
+    <string name="settings_sulog">记录超级用户访问日志</string>
+    <string name="settings_sulog_summary">在内核记录超级用户请求日志</string>
     <string name="feature_status_unsupported_summary">内核不支持此功能。</string>
     <string name="feature_status_managed_summary">此功能由模块管理。</string>
     <string name="settings_mode_default">默认</string>
-    <string name="settings_mode_temp_enable">临时启用</string>
-    <string name="settings_mode_always_enable">始终启用</string>
     <string name="module_install_multiple_confirm_with_names">确定要安装以下 %1$d 个模块吗？\n\n%2$s</string>
     <string name="more_settings">更多设置</string>
     <string name="selinux">SELinux</string>
@@ -233,13 +239,11 @@
     <string name="home_kpm_version">KPM 版本</string>
     <string name="close_notice">关闭</string>
     <string name="kernel_module_notice">以下内核模块功能由 KernelPatch 开发，经过修改后加入 SukiSU Ultra 的内核模块功能</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra 展望</string>
     <string name="kpm_control_success">成功</string>
     <string name="kpm_control_failed">错误</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra 未来将会成为一个相对独立的 KSU 分支，但是依然感谢官方 KernelSU 和 MKSU 等做出的贡献</string>
-    <string name="not_supported">不支持</string>
-    <string name="supported">支持</string>
-    <string name="kernel_patched">内核未进行补丁</string>
+    <string name="kpm_not_supported">不支持 (%s)</string>
+    <string name="kpm_supported">支持 (%s)</string>
+    <string name="kernel_not_patched">内核未进行补丁</string>
     <string name="kernel_not_enabled">内核未配置</string>
     <string name="custom_settings">个性化设置</string>
     <string name="kpm_install_mode">安装</string>
@@ -301,13 +305,16 @@
     <!-- KPM display settings -->
     <string name="show_kpm_info">隐藏 KPM 功能</string>
     <string name="show_kpm_info_summary">在主页和底栏隐藏 KPM 相关功能和信息</string>
-    <!-- Webui X settings -->
-    <string name="use_webuix">选择使用的 WebUI 引擎</string>
-    <string name="engine_auto_select">自动选择</string>
-    <string name="engine_force_webuix">强制使用 WebUI X</string>
-    <string name="engine_force_ksu">强制使用 KSU 的 WebUI</string>
+    <!-- WebUI settings -->
+    <string name="no_such_module">模块 %s 不存在</string>
+    <string name="module_unavailable">模块 %s 被禁用，待更新或待卸载</string>
+    <string name="module_webui_alert">来自模块 %s 的消息</string>
+    <string name="select_default_webui_engine">默认 WebUI 引擎</string>
+    <string name="webui_engine_default">遵守默认设置</string>
     <string name="use_webuix_eruda">将 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在 WebUI X 中注入调试控制台，使调试更容易,需要启用 WebView 调试</string>
+    <string name="config_modules_webui">配置 WebUI 引擎</string>
+    <string name="config_modules_webui_description">为各模块单独设置 WebUI 引擎</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">应用 DPI</string>
     <string name="app_dpi_summary">仅调整当前应用的屏幕显示密度</string>
@@ -324,7 +331,7 @@
     <!-- Language settings related strings -->
     <string name="settings_language">应用语言</string>
     <string name="language_system_default">跟随系统</string>
-    <string name="settings_card_dim">卡片暗度调节</string>
+    <string name="settings_background_dim">背景暗度调节</string>
     <!-- Flash related -->
     <string name="error_code">错误代码</string>
     <string name="check_log">请查看日志</string>
@@ -507,7 +514,7 @@
     <string name="susfs_backup_file_not_found">备份文件未找到</string>
     <string name="susfs_backup_invalid_format">无效的备份文件格式</string>
     <string name="susfs_backup_version_mismatch">备份版本不匹配，但将尝试还原</string>
-    <string name="susfs_restore_title">还原</string>
+    <string name="restore">还原</string>
     <string name="susfs_restore_description">从备份文件还原 SuSFS 配置。这将覆盖所有当前设置。</string>
     <string name="susfs_restore_select_file">选择备份文件</string>
     <string name="susfs_restore_success" formatted="false">配置还原成功，备份创建于 %s，来自设备：%s</string>
@@ -520,12 +527,13 @@
     <string name="susfs_backup_info_version">版本：%s</string>
     <string name="hide_bl_script">上锁状态</string>
     <string name="hide_bl_script_description">覆盖引导锁状态属性于 late_start 服务模式</string>
+    <string name="clear">清空</string>
     <string name="cleanup_residue">清理工具残留</string>
     <string name="cleanup_residue_description">清理各种模块以及工具的残留文件和目录（可能会误删导致丢失以及无法启动，谨慎使用）</string>
     <string name="susfs_edit_sus_path">编辑 SuS 路径</string>
     <string name="edit_kstat_statically_title">编辑 Kstat 静态配置</string>
     <string name="edit_kstat_path_title">编辑 Kstat 路径</string>
-    <string name="susfs_save">保存</string>
+    <string name="save">保存</string>
     <string name="edit">编辑</string>
     <string name="delete">删除</string>
     <string name="update">更新</string>
@@ -539,7 +547,9 @@
     <string name="susfs_add_app_path">添加应用路径</string>
     <string name="susfs_version_mismatch">SuSFS 库版本不匹配，内核：%1$s vs 管理器：%2$s，建议更新内核或管理器</string>
     <string name="warning">警告</string>
+    <string name="search">搜索</string>
     <string name="search_apps">搜索应用</string>
+    <string name="search_modules">搜索模块</string>
     <string name="selected_apps_count">%1$d 个已选应用</string>
     <string name="already_added_apps_count">%1$d 个已添加应用</string>
     <string name="all_apps_already_added">所有应用均已添加</string>
@@ -560,7 +570,6 @@
     <string name="unknown_signature">未知</string>
     <string name="multi_manager_list">活跃管理器</string>
     <string name="no_active_manager">无活跃管理器</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Zygisk 实现</string>
     <string name="home_meta_module_implement">元模块实现</string>
     <!-- 循环路径相关 -->
@@ -590,14 +599,6 @@
     <string name="avc_log_spoofing_warning">重要提示：\n
 - 内核中默认设置为 \'0\'\n
 - 启用此功能有时会使开发人员在调试权限或 SELinux 问题时难以识别原因，因此建议用户在调试时禁用此功能。</string>
-    <!-- 模块签名功能描述 -->
-    <string name="module_verified">已验证</string>
-    <string name="module_signature_verified">模块签名已验证</string>
-    <string name="module_signature_verification">验证签名</string>
-    <string name="module_signature_verification_summary">模块安装时，强制验证签名。（仅 ARM架构 可用）</string>
-    <string name="module_signature_invalid">未知发布者</string>
-    <string name="module_signature_invalid_message">未经签名的模块可能不完整。为了对设备进行保护，已阻止安装此模块。</string>
-    <string name="module_signature_verification_failed">未经签名的模块可能不完整。你想安装来自未知发布者的模块吗？</string>
     <string name="home_hook_type">钩子类型</string>
     <!-- KPM patching related strings -->
     <string name="kpm_patch_options">KPM 修补</string>
@@ -695,6 +696,7 @@
     <string name="umount_path_manager">Umount 路径管理</string>
     <string name="umount_path_manager_summary">管理内核卸载路径</string>
     <string name="umount_path_restart_notice">添加或删除路径后需要重启设备才能生效。系统会在下次启动时应用新的配置。</string>
+    <string name="no_any_umount_path">没有任何内核卸载路径</string>
     <string name="add_umount_path">添加 Umount 路径</string>
     <string name="mount_path">挂载路径</string>
     <string name="umount_flags">卸载标志</string>
@@ -712,6 +714,38 @@
     <string name="apply_config">应用配置</string>
     <string name="config_applied">配置已应用到内核</string>
     <string name="group_contains_apps">包含 %1$d 个应用</string>
-    <string name="settings_disable_sulog"> 禁用超级用户日志 </string>
-    <string name="settings_disable_sulog_summary">禁用 KernelSU 超级用户访问记录</string>
+    <string name="meta_module_disabled">模块未挂载，因为元模块已禁用</string>
+    <string name="meta_module_removed">模块未挂载，因为元模块即将删除</string>
+    <string name="no_meta_module_installed">模块未挂载，因为未安装元模块</string>
+    <string name="network_offline">您处于离线状态</string>
+    <string name="network_retry">重试</string>
+    <string name="please_check_network">请检查网络连接情况，然后稍后重试</string>
+    <string name="confirm_install_module_title">要安装模块 %1$s 吗?</string>
+    <string name="assets_multiple_select_dialog_title">请选择你想安装的附件</string>
+    <string name="assets_multiple_select_dialog_content_description">大小: %s, 下载数: %s</string>
+    <string name="assets_multiple_select_dialog_warning">没有任何附件被选择</string>
+    <string name="installed">已安装</string>
+    <string name="open_module_home_page">在浏览器中打开模块主页</string>
+    <string name="readme">自述文件</string>
+    <string name="release">版本</string>
+    <string name="info">信息</string>
+    <string name="author_link">模块作者链接</string>
+    <string name="source_code">源码</string>
+    <string name="assert_support_content">%1$s,%2$d 下载</string>
+    <string name="show_detail_or_hide_detail">显示或隐藏详情</string>
+    <string name="local">本地</string>
+    <string name="remote">远程</string>
+    <string name="module_shortcut_title">创建快捷方式</string>
+    <string name="module_shortcut_name_label">快捷方式名称</string>
+    <string name="module_shortcut_icon_pick">选择自定义图标</string>
+    <string name="module_shortcut_add">添加快捷方式</string>
+    <string name="module_shortcut_not_supported">启动器不支持桌面快捷方式。</string>
+    <string name="module_shortcut_should_not_empty">桌面快捷方式名称不得为空</string>
+    <string name="module_shortcut_created">已在桌面创建快捷方式。</string>
+    <string name="module_shortcut_updated">快捷方式已更新。</string>
+    <string name="module_shortcut_delete">删除快捷方式</string>
+    <string name="module_shortcut_type_title">选择类型</string>
+    <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用“创建桌面快捷方式”权限。</string>
+    <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用“桌面快捷方式”权限。</string>
+    <string name="module_shortcut_permission_tip_default">若创建快捷方式失败，请在系统设置中为本应用启用桌面快捷方式权限。</string>
 </resources>

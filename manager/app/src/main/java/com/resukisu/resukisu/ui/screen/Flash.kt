@@ -5,11 +5,31 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.*
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,47 +37,79 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.activity.ComponentActivity
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.ui.platform.LocalUriHandler
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.MainScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.MainActivity
 import com.resukisu.resukisu.ui.component.KeyEventBlocker
+import com.resukisu.resukisu.ui.component.rememberCustomDialog
 import com.resukisu.resukisu.ui.theme.CardConfig
-import com.resukisu.resukisu.ui.util.*
+import com.resukisu.resukisu.ui.util.LkmSelection
+import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.flashModule
+import com.resukisu.resukisu.ui.util.hasMetaModule
+import com.resukisu.resukisu.ui.util.installBoot
+import com.resukisu.resukisu.ui.util.module.ModuleUtils
+import com.resukisu.resukisu.ui.util.reboot
+import com.resukisu.resukisu.ui.util.restoreBoot
+import com.resukisu.resukisu.ui.util.uninstallPermanently
 import com.resukisu.resukisu.ui.viewmodel.ModuleViewModel
+import com.topjohnwu.superuser.io.SuFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
-import androidx.core.content.edit
-import com.resukisu.resukisu.ui.component.rememberCustomDialog
-import com.resukisu.resukisu.ui.util.module.ModuleOperationUtils
-import com.resukisu.resukisu.ui.util.module.ModuleUtils
-import com.topjohnwu.superuser.io.SuFile
+import java.util.Date
+import java.util.Locale
 
 /**
  * @author ShirkNeko
@@ -81,9 +133,6 @@ data class ModuleInstallStatus(
 )
 
 private var moduleInstallStatus = mutableStateOf(ModuleInstallStatus())
-
-// 存储模块URI和验证状态的映射
-private var moduleVerificationMap = mutableMapOf<Uri, Boolean>()
 
 fun setFlashingStatus(status: FlashingStatus) {
     currentFlashingStatus.value = status
@@ -118,10 +167,6 @@ fun updateModuleInstallStatus(
             verifiedModules = updatedVerifiedModules
         )
     }
-}
-
-fun setModuleVerificationStatus(uri: Uri, isVerified: Boolean) {
-    moduleVerificationMap[uri] = isVerified
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -223,7 +268,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     shouldWarningUserMetaModule = false
                     hasFlashCompleted = false
                     hasExecuted = false
-                    moduleVerificationMap.clear()
                 }
             }
             is FlashIt.FlashModuleUpdate -> {
@@ -263,10 +307,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     setFlashingStatus(FlashingStatus.FAILED)
                 } else {
                     setFlashingStatus(FlashingStatus.SUCCESS)
-
-                    // 处理模块更新成功后的验证标志
-                    val isVerified = moduleVerificationMap[flashIt.uri] ?: false
-                    ModuleOperationUtils.handleModuleUpdate(context, flashIt.uri, isVerified)
 
                     viewModel.markNeedRefresh()
                 }
@@ -365,27 +405,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 } else {
                     setFlashingStatus(FlashingStatus.SUCCESS)
 
-                    // 处理模块安装成功后的验证标志
-                    when (flashIt) {
-                        is FlashIt.FlashModule -> {
-                            val isVerified = moduleVerificationMap[flashIt.uri] ?: false
-                            ModuleOperationUtils.handleModuleInstallSuccess(context, flashIt.uri, isVerified)
-                            if (isVerified) {
-                                updateModuleInstallStatus(verifiedModule = moduleInstallStatus.value.currentModuleName)
-                            }
-                        }
-                        is FlashIt.FlashModules -> {
-                            val currentUri = flashIt.uris[flashIt.currentIndex]
-                            val isVerified = moduleVerificationMap[currentUri] ?: false
-                            ModuleOperationUtils.handleModuleInstallSuccess(context, currentUri, isVerified)
-                            if (isVerified) {
-                                updateModuleInstallStatus(verifiedModule = moduleInstallStatus.value.currentModuleName)
-                            }
-                        }
-
-                        else -> {}
-                    }
-
                     viewModel.markNeedRefresh()
                 }
                 if (showReboot) {
@@ -482,6 +501,9 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         }
     }
 
+    val activity = LocalActivity.current as MainActivity?
+    val pages = if (activity != null ) BottomBarDestination.getPages(activity.settingsStateFlow.collectAsState().value) else null
+
     val onBack: () -> Unit = {
         val canGoBack = when (flashIt) {
             is FlashIt.FlashModuleUpdate -> currentFlashingStatus.value != FlashingStatus.FLASHING
@@ -495,7 +517,10 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 if (flashIt is FlashIt.FlashModules || flashIt is FlashIt.FlashModuleUpdate) {
                     viewModel.markNeedRefresh()
                     viewModel.fetchModuleList()
-                    navigator.navigate(ModuleScreenDestination)
+                    pages?.forEach { destination ->
+                        if (destination != BottomBarDestination.Module) return@forEach
+                        navigator.navigate(MainScreenDestination())
+                    }
                 } else {
                     viewModel.markNeedRefresh()
                     viewModel.fetchModuleList()
@@ -603,6 +628,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 }
 
 // 显示模块安装进度条和状态
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleInstallProgressBar(
     currentIndex: Int,
@@ -656,7 +682,7 @@ fun ModuleInstallProgressBar(
             Spacer(modifier = Modifier.height(8.dp))
 
             // 进度条
-            LinearProgressIndicator(
+            LinearWavyProgressIndicator(
                 progress = { progress.value },
                 modifier = Modifier
                     .fillMaxWidth()

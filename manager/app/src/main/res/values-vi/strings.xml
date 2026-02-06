@@ -79,6 +79,8 @@
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">Mẫu Hồ sơ ứng dụng</string>
     <string name="settings_profile_template_summary">Quản lý mẫu cục bộ và trực tuyến của Hồ sơ ứng dụng</string>
+    <string name="settings_check_update">Thông báo cập nhật</string>
+    <string name="settings_check_update_summary">Tự động kiểm tra bản cập nhật của mô-đun và trình quản lý</string>
     <string name="app_profile_template_create">Tạo mẫu</string>
     <string name="app_profile_template_edit">Chỉnh sửa mẫu</string>
     <string name="app_profile_template_id">ID</string>
@@ -99,8 +101,6 @@
     <string name="app_profile_template_save_failed">Lưu mẫu thất bại</string>
     <string name="app_profile_template_import_empty">Bộ nhớ tạm đang trống!</string>
     <string name="module_changelog_failed">Lấy changelog thất bại: %s</string>
-    <string name="settings_check_update">Kiểm tra cập nhật</string>
-    <string name="settings_check_update_summary">Tự động kiểm tra cập nhật khi mở ứng dụng</string>
     <string name="grant_root_failed">Cấp quyền root thất bại!</string>
     <string name="action">Khởi chạy</string>
     <string name="close">Đóng</string>
@@ -114,6 +114,10 @@
     <string name="install_select_partition">Chọn phân vùng</string>
     <string name="install_upload_lkm_file">Sử dụng file LKM cục bộ</string>
     <string name="install_only_support_ko_file">Chỉ hỗ trợ các file .ko</string>
+    <string name="settings_sucompat">Lệnh su truyền thống</string>
+    <string name="settings_sucompat_summary">Cho phép truy cập root qua /system/bin/su, trong các quy trình mới.</string>
+    <string name="settings_kernel_umount">Gỡ kết nối mô-đun</string>
+    <string name="settings_kernel_umount_summary">Gỡ kết nối các mô-đun khỏi hạt nhân trong Hồ sơ ứng dụng</string>
     <string name="select_file_tip">Phân vùng %1$s được khuyến nghị</string>
     <string name="select_kmi">Chọn KMI</string>
     <string name="settings_uninstall">Gỡ cài đặt</string>
@@ -138,10 +142,6 @@
     <string name="confirm">Xác nhận</string>
     <string name="cancel">Thoát</string>
     <!-- Backup related -->
-    <string name="backup_success">Sao lưu thành công (tar.gz)</string>
-    <string name="backup_failed">Sao lưu thất bại: %1$s</string>
-    <string name="backup_modules">Sao lưu các module</string>
-    <string name="restore_modules">Khôi phục các module</string>
     <!-- Restore related messages -->
     <string name="restore_success">Các module đã được khôi phục thành công, cần khởi động lại</string>
     <string name="restore_failed">Khôi phục thất bại: %1$s</string>
@@ -160,21 +160,12 @@
     <string name="restore_allowlist">Khôi phục danh sách cho phép</string>
     <string name="settings_custom_background">Tuỳ chỉnh nền ứng dụng</string>
     <string name="settings_custom_background_summary">Chọn một hình ảnh làm hình nền</string>
-    <string name="settings_card_alpha">Độ trong suốt của thanh điều hướng</string>
     <string name="home_android_version">Phiên bản Android</string>
     <string name="home_device_model">Model thiết bị</string>
     <string name="su_not_allowed">Không thể cấp quyền Superuser cho %s</string>
-    <string name="settings_disable_su">Vô hiệu hoá lệnh SU</string>
-    <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (các app đã cấp trước đó không bị ảnh hưởng)</string>
-    <string name="settings_disable_kernel_umount">Vô hiệu hoá kernel umount</string>
-    <string name="settings_disable_kernel_umount_summary">Vô hiệu hoá umount kernel-level được kiểm soát bởi KernelSU</string>
-    <string name="settings_enable_enhanced_security">Kích hoạt bảo mật nâng cao</string>
-    <string name="settings_enable_enhanced_security_summary">Cho phép chính sách bảo mật chặt chẽ hơn</string>
     <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này</string>
     <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module</string>
     <string name="settings_mode_default">Mặc định</string>
-    <string name="settings_mode_temp_enable">Tạm thời kích hoạt</string>
-    <string name="settings_mode_always_enable">Luôn luôn kích hoạt</string>
     <string name="module_install_multiple_confirm_with_names">Bạn có chắc muốn cài đặt các module %1$d không? \n\n%2$s</string>
     <string name="more_settings">Nhiều cài đặt hơn</string>
     <string name="selinux">SELinux</string>
@@ -234,13 +225,11 @@
     <string name="home_kpm_version">Phiên bản KPM</string>
     <string name="close_notice">Đóng</string>
     <string name="kernel_module_notice">Các chức năng Kernel Module sau đây được KernelPatch phát triển và sửa đổi để tương thích với các chức năng Kernel Module của SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">Tương lai của SukiSU Ultra</string>
     <string name="kpm_control_success">Thành công</string>
     <string name="kpm_control_failed">Thất bại</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra sẽ là một nhánh tương đối độc lập của KSU trong tương lai, nhưng chúng tôi xin cảm ơn KernelSU và MKSU,... vì những đóng góp của họ!</string>
-    <string name="not_supported">Không được hỗ trợ</string>
-    <string name="supported">Được hỗ trợ</string>
-    <string name="kernel_patched">Kernel chưa được vá</string>
+    <string name="kpm_not_supported">Không được hỗ trợ (%s)</string>
+    <string name="kpm_supported">Được hỗ trợ (%s)</string>
+    <string name="kernel_not_patched">Kernel chưa được vá</string>
     <string name="kernel_not_enabled">Kernel chưa được cấu hình</string>
     <string name="custom_settings">Cài đặt giản lược</string>
     <string name="kpm_install_mode">Cài đặt KPM</string>
@@ -303,10 +292,6 @@
     <string name="show_kpm_info">Ẩn chức năng KPM</string>
     <string name="show_kpm_info_summary">Ẩn thông tin và chức năng của KPM ở trang chủ và thanh điều hướng</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Tuỳ chỉnh WebUI</string>
-    <string name="engine_auto_select">Tự động chọn</string>
-    <string name="engine_force_webuix">Sử dụng WebUI X</string>
-    <string name="engine_force_ksu">Sử dụng KSU WebUI</string>
     <string name="use_webuix_eruda">Tiêm Eruda vào WebUI X</string>
     <string name="use_webuix_eruda_summary">Chèn bảng điều khiển gỡ lỗi vào WebUI X để gỡ lỗi dễ dàng hơn. Yêu cầu bật gỡ lỗi Web</string>
     <!-- DPI setting related strings -->
@@ -325,7 +310,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Ngôn ngữ ứng dụng</string>
     <string name="language_system_default">Mặc định theo hệ thống</string>
-    <string name="settings_card_dim">Độ trong suốt của thẻ</string>
     <!-- Flash related -->
     <string name="error_code">Error code</string>
     <string name="check_log">Vui lòng kiểm tra nhật ký</string>
@@ -508,7 +492,7 @@
     <string name="susfs_backup_file_not_found">Không tìm thấy file sao lưu</string>
     <string name="susfs_backup_invalid_format">Định dạng file sao lưu không hợp lệ</string>
     <string name="susfs_backup_version_mismatch">Phiên bản sao lưu không khớp, nhưng sẽ cố gắng khôi phục</string>
-    <string name="susfs_restore_title">Khôi phục</string>
+    <string name="restore">Khôi phục</string>
     <string name="susfs_restore_description">Khôi phục cấu hình SuSFS từ file sao lưu. Thao tác này sẽ ghi đè lên tất cả các cài đặt hiện tại</string>
     <string name="susfs_restore_select_file">Chọn file sao lưu</string>
     <string name="susfs_restore_success" formatted="false">Cấu hình đã được khôi phục thành công từ bản sao lưu được tạo trên %s, từ thiết bị: %s</string>
@@ -526,7 +510,7 @@
     <string name="susfs_edit_sus_path">Chỉnh sửa Đường dẫn SuS</string>
     <string name="edit_kstat_statically_title">Chỉnh sửa cấu hình Kstat tĩnh</string>
     <string name="edit_kstat_path_title">Chỉnh sửa Đường dẫn Kstat</string>
-    <string name="susfs_save">Lưu</string>
+    <string name="save">Lưu</string>
     <string name="edit">Chỉnh sửa</string>
     <string name="delete">Xoá</string>
     <string name="update">Cập nhật</string>
@@ -561,7 +545,6 @@
     <string name="unknown_signature">Không xác định</string>
     <string name="multi_manager_list">Trình quản lý đang hoạt động</string>
     <string name="no_active_manager">Trình quản lý đang không hoạt động</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Triển khai Zygisk</string>
     <string name="home_meta_module_implement">Triển khai Siêu Module</string>
     <!-- 循环路径相关 -->
@@ -591,14 +574,6 @@ Bật: Kích hoạt tính năng giả mạo sus tcontext của \'su\' thành \'u
     <string name="avc_log_spoofing_warning">Lưu ý quan trọng:\n
 - Giá trị này được đặt thành \'0\' theo mặc định trong kernel\n
 - Việc bật tính năng này đôi khi có thể khiến các nhà phát triển khó xác định nguyên nhân của các vấn đề về quyền hoặc SELinux khi gỡ lỗi, vì vậy người dùng nên tắt tính năng này khi gỡ lỗi</string>
-    <!-- 模块签名功能描述 -->
-    <string name="module_verified">Đã xác minh</string>
-    <string name="module_signature_verified">Chữ ký module đã được xác minh</string>
-    <string name="module_signature_verification">Xác minh chữ ký</string>
-    <string name="module_signature_verification_summary">Buộc xác minh chữ ký khi cài đặt module (chỉ khả dụng cho kiến trúc ARM)</string>
-    <string name="module_signature_invalid">Tác giả không xác định</string>
-    <string name="module_signature_invalid_message">Các module chưa được ký có thể chưa hoàn chỉnh. Để bảo vệ thiết bị của bạn, module này đã bị chặn cài đặt</string>
-    <string name="module_signature_verification_failed">Các module chưa được ký có thể chưa hoàn chỉnh. Bạn có muốn cài đặt module này từ một tác giả chưa xác định không?</string>
     <string name="home_hook_type">Chế độ Hook</string>
     <!-- KPM patching related strings -->
     <string name="kpm_patch_options">Vá KPM</string>
@@ -718,6 +693,4 @@ Bật: Kích hoạt tính năng giả mạo sus tcontext của \'su\' thành \'u
     <string name="config_applied">Cấu hình đã được áp dụng cho Kernel</string>
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">Chứa %d ứng dụng</string>
-    <string name="settings_disable_sulog">Vô hiệu hoá ghi nhật ký Superuser</string>
-    <string name="settings_disable_sulog_summary">Vô hiệu hoá ghi nhật ký truy cập Superuser</string>
 </resources>

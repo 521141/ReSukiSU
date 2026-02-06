@@ -6,7 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.resukisu.resukisu.ui.util.*
+import com.resukisu.resukisu.ui.util.controlKpmModule
+import com.resukisu.resukisu.ui.util.getKpmModuleCount
+import com.resukisu.resukisu.ui.util.getKpmModuleInfo
+import com.resukisu.resukisu.ui.util.getKpmVersion
+import com.resukisu.resukisu.ui.util.listKpmModules
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,7 +33,7 @@ class KpmViewModel : ViewModel() {
         private set
 
     fun fetchModuleList() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             isRefreshing = true
             try {
                 val moduleCount = getKpmModuleCount()

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <linux/capability.h>
 #include <pwd.h>
+#include <stdlib.h>
 
 NativeBridgeNP(getVersion, jint) {
     uint32_t version = get_version();
@@ -311,14 +312,6 @@ NativeBridge(setKernelUmountEnabled, jboolean, jboolean enabled) {
     return set_kernel_umount_enabled(enabled);
 }
 
-NativeBridgeNP(isEnhancedSecurityEnabled, jboolean) {
-    return is_enhanced_security_enabled();
-}
-
-NativeBridge(setEnhancedSecurityEnabled, jboolean, jboolean enabled) {
-    return set_enhanced_security_enabled(enabled);
-}
-
 NativeBridgeNP(isSuLogEnabled, jboolean) {
     return is_sulog_enabled();
 }
@@ -389,64 +382,44 @@ NativeBridgeNP(clearDynamicManager, jboolean) {
 
 // Get a list of active managers
 NativeBridgeNP(getManagersList, jobject) {
-	struct manager_list_info managerListInfo;
-	bool result = get_managers_list(&managerListInfo);
+    struct ksu_get_managers_cmd *cmd = nullptr;
 
-	if (!result) {
-		LogDebug("getManagersList: failed to get active managers list");
-		return NULL;
-	}
+    bool result = get_managers_list(&cmd);
 
-	jobject obj = CREATE_JAVA_OBJECT("com/resukisu/resukisu/Natives$ManagersList");
-	jclass managerListCls = GetEnvironment()->FindClass(env, "com/resukisu/resukisu/Natives$ManagersList");
+    if (!result) {
+        LogDebug("getManagersList: failed to get active managers list");
+        return NULL;
+    }
 
-	SET_INT_FIELD(obj, managerListCls, count, (jint)managerListInfo.count);
+    int count = (cmd != NULL) ? (int) cmd->count : 0;
 
-	jobject managersList = CREATE_ARRAYLIST();
+    jobject obj = CREATE_JAVA_OBJECT("com/resukisu/resukisu/Natives$ManagersList");
+    jclass managerListCls = GetEnvironment()->FindClass(env,
+                                                        "com/resukisu/resukisu/Natives$ManagersList");
 
-	for (int i = 0; i < managerListInfo.count; i++) {
-		jobject managerInfo = CREATE_JAVA_OBJECT_WITH_PARAMS(
-				"com/resukisu/resukisu/Natives$ManagerInfo",
-				"(II)V",
-				(jint)managerListInfo.managers[i].uid,
-				(jint)managerListInfo.managers[i].signature_index
-		);
-		ADD_TO_LIST(managersList, managerInfo);
-	}
+    SET_INT_FIELD(obj, managerListCls, count, (jint) count);
 
-	SET_OBJECT_FIELD(obj, managerListCls, managers, managersList);
+    jobject managersList = CREATE_ARRAYLIST();
 
-	LogDebug("getManagersList: count=%d", managerListInfo.count);
-	return obj;
-}
+    if (cmd && count > 0) {
+        for (int i = 0; i < count; i++) {
+            jobject managerInfo = CREATE_JAVA_OBJECT_WITH_PARAMS(
+                    "com/resukisu/resukisu/Natives$ManagerInfo",
+                    "(II)V",
+                    (jint) cmd->managers[i].uid,
+                    (jint) cmd->managers[i].signature_index
+            );
+            ADD_TO_LIST(managersList, managerInfo);
+        }
+    }
 
-NativeBridge(verifyModuleSignature, jboolean, jstring modulePath) {
-#if defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
-	if (!modulePath) {
-		LogDebug("verifyModuleSignature: modulePath is null");
-		return false;
-	}
+    SET_OBJECT_FIELD(obj, managerListCls, managers, managersList);
 
-	const char* cModulePath = GetEnvironment()->GetStringUTFChars(env, modulePath, nullptr);
-	bool result = verify_module_signature(cModulePath);
-	GetEnvironment()->ReleaseStringUTFChars(env, modulePath, cModulePath);
+    LogDebug("getManagersList: count=%d", count);
 
-	LogDebug("verifyModuleSignature: path=%s, result=%d", cModulePath, result);
-	return result;
-#else
-	LogDebug("verifyModuleSignature: not supported on non-ARM architecture");
-	return false;
-#endif
-}
+    if (cmd) {
+        free(cmd);
+    }
 
-NativeBridgeNP(isUidScannerEnabled, jboolean) {
-	return is_uid_scanner_enabled();
-}
-
-NativeBridge(setUidScannerEnabled, jboolean, jboolean enabled) {
-	return set_uid_scanner_enabled(enabled);
-}
-
-NativeBridgeNP(clearUidScannerEnvironment, jboolean) {
-	return clear_uid_scanner_environment();
+    return obj;
 }

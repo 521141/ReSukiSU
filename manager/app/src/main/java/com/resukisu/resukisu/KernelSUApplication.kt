@@ -5,25 +5,29 @@ import android.system.Os
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
 import coil.Coil
 import coil.ImageLoader
 import com.dergoogler.mmrl.platform.Platform
+import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
+import com.resukisu.resukisu.ui.viewmodel.ModuleViewModel
+import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 lateinit var ksuApp: KernelSUApplication
 
 class KernelSUApplication : Application(), ViewModelStoreOwner {
 
     lateinit var okhttpClient: OkHttpClient
+    val UserAgent = "ReSukiSU/${BuildConfig.VERSION_CODE}"
     private val appViewModelStore by lazy { ViewModelStore() }
 
     override fun onCreate() {
@@ -32,8 +36,12 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
 
         // For faster response when first entering superuser or webui activity
         val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
+        val homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        val moduleViewModel = ViewModelProvider(this)[ModuleViewModel::class.java]
         CoroutineScope(Dispatchers.Main).launch {
+            homeViewModel.refreshData(this@KernelSUApplication)
             superUserViewModel.fetchAppList()
+            moduleViewModel.fetchModuleList()
         }
 
         Platform.setHiddenApiExemptions()
@@ -62,10 +70,14 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
                 .addInterceptor { block ->
                     block.proceed(
                         block.request().newBuilder()
-                            .header("User-Agent", "SukiSU/${BuildConfig.VERSION_CODE}")
+                            .header("User-Agent", UserAgent)
                             .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
                     )
-                }.build()
+                }
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS)
+                .build()
     }
     override val viewModelStore: ViewModelStore
         get() = appViewModelStore
