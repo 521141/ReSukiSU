@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="learn_more">了解更多</string>
     <string name="home">主页</string>
+    <string name="learn_more">了解更多</string>
     <string name="home_not_installed">未安装</string>
     <string name="home_click_to_install">点击安装</string>
     <string name="home_working">工作中</string>
@@ -37,7 +37,7 @@
     <string name="reboot_edl">重启到 EDL</string>
     <string name="about">关于</string>
     <string name="module_uninstall_confirm">确定要卸载模块 %s 吗？</string>
-    <string name="metamodule_uninstall_confirm">"您确定要卸载模块 %s 吗？此操作将影响所有模块，并且元模块提供的某些功能（如挂载）将不再工作。  "</string>
+    <string name="metamodule_uninstall_confirm">您确定要卸载模块 %s 吗？此操作将影响所有模块，并且元模块提供的某些功能（如挂载）将不再工作。  </string>
     <string name="module_uninstall_success">%s 已卸载</string>
     <string name="module_uninstall_failed">卸载失败：%s</string>
     <string name="module_version">版本</string>
@@ -68,6 +68,7 @@
     <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸载模块</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
+    <string name="debug_version_notice">"你正在使用管理器的 DEBUG 构建，如果你不知道什么是 DEBUG 构建，请立即切换至 RELEASE 构建"</string>
     <string name="require_kernel_version" formatted="false">当前 KernelSU 版本 %s 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %s 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
     <string name="settings_umount_modules_default_summary">App Profile 中\"卸载模块\"的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
@@ -109,7 +110,6 @@
     <string name="module_changelog_failed">获取更新日志失败：%s</string>
     <string name="settings_check_update">更新提醒</string>
     <string name="settings_check_update_summary">自动检查模块和管理器更新</string>
-    <string name="debug_version_notice">"你正在使用管理器的 DEBUG 构建，如果你不知道什么是 DEBUG 构建，请立即切换至 RELEASE 构建"</string>
     <string name="grant_root_failed">获取 root 失败！</string>
     <string name="action">执行</string>
     <string name="close">关闭</string>
@@ -169,21 +169,20 @@
     <string name="home_android_version">Android 版本</string>
     <string name="home_device_model">设备</string>
     <string name="su_not_allowed">不允许授予 %s 超级用户权限</string>
-    <string name="settings_mode_enable_by_default">启用（默认）</string>
-    <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
-    <string name="settings_mode_disable_always">始终禁用</string>
     <string name="settings_sucompat">传统 su 命令支持</string>
     <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
     <string name="settings_kernel_umount">内核处理卸载模块</string>
     <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块</string>
+    <string name="feature_status_unsupported_summary">内核不支持此功能。</string>
+    <string name="settings_mode_enable_by_default">启用（默认）</string>
+    <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
+    <string name="settings_mode_disable_always">始终禁用</string>
     <string name="settings_sulog">记录超级用户访问日志</string>
     <string name="settings_sulog_summary">在内核记录超级用户请求日志</string>
-    <string name="feature_status_unsupported_summary">内核不支持此功能。</string>
     <string name="feature_status_managed_summary">此功能由模块管理。</string>
     <string name="settings_mode_default">默认</string>
     <string name="module_install_multiple_confirm_with_names">确定要安装以下 %1$d 个模块吗？\n\n%2$s</string>
     <string name="more_settings">更多设置</string>
-    <string name="selinux">SELinux</string>
     <string name="selinux_enabled">强制执行</string>
     <string name="selinux_disabled">宽容模式</string>
     <string name="simple_mode">简洁模式</string>
@@ -206,7 +205,6 @@
     <string name="theme_follow_system">跟随系统</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
-    <string name="manual_hook">Manual Hook</string>
     <string name="dynamic_color_title">动态颜色</string>
     <string name="dynamic_color_summary">使用系统主题的动态颜色</string>
     <string name="choose_theme_color">选择主题色</string>
@@ -305,16 +303,16 @@
     <!-- KPM display settings -->
     <string name="show_kpm_info">隐藏 KPM 功能</string>
     <string name="show_kpm_info_summary">在主页和底栏隐藏 KPM 相关功能和信息</string>
-    <!-- WebUI settings -->
+    <!-- Webui settings -->
+    <string name="module_webui_alert">来自模块 %s 的消息</string>
     <string name="no_such_module">模块 %s 不存在</string>
     <string name="module_unavailable">模块 %s 被禁用，待更新或待卸载</string>
-    <string name="module_webui_alert">来自模块 %s 的消息</string>
     <string name="select_default_webui_engine">默认 WebUI 引擎</string>
     <string name="webui_engine_default">遵守默认设置</string>
     <string name="use_webuix_eruda">将 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在 WebUI X 中注入调试控制台，使调试更容易,需要启用 WebView 调试</string>
     <string name="config_modules_webui">配置 WebUI 引擎</string>
-    <string name="config_modules_webui_description">为各模块单独设置 WebUI 引擎</string>
+    <string name="config_modules_webui_description">"为各模块单独设置 WebUI 引擎"</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">应用 DPI</string>
     <string name="app_dpi_summary">仅调整当前应用的屏幕显示密度</string>
@@ -343,7 +341,6 @@
     <string name="warning_of_meta_module_summary">这个模块需要挂载一些文件。需要安装元模块，使它正常工作</string>
     <!-- 分类相关 -->
     <string name="category_all_apps">全部</string>
-    <string name="category_root_apps">Root</string>
     <string name="category_custom_apps">自定义</string>
     <string name="category_default_apps">默认</string>
     <!-- 排序相关 -->
@@ -449,8 +446,6 @@
     <string name="show_more_module_info_summary">显示额外的模块信息，如更新配置 URL 等</string>
     <string name="susfs_execution_location_label">执行位置</string>
     <string name="susfs_current_execution_location">当前执行位置：%s</string>
-    <string name="susfs_execution_location_service">Service</string>
-    <string name="susfs_execution_location_post_fs_data">Post-FS-Data</string>
     <string name="susfs_execution_location_service_description">在系统服务启动后执行</string>
     <string name="susfs_execution_location_post_fs_data_description">在文件系统挂载后但系统完全启动前执行,可能会导致循环重启</string>
     <string name="susfs_slot_info_title">槽位信息</string>
@@ -583,7 +578,6 @@
     <string name="susfs_reset_loop_paths_title">重置循环路径</string>
     <string name="susfs_reset_loop_paths_message">确定要清空所有 SuS 循环路径吗？此操作无法撤销。</string>
     <string name="susfs_loop_path_label">循环路径</string>
-    <string name="susfs_loop_path_placeholder">/data/example/path</string>
     <string name="susfs_loop_path_restriction_warning">注意：只有不在 /storage/ 和 /sdcard/ 内的路径才能通过循环路径添加。</string>
     <string name="susfs_loop_path_invalid_location">错误：循环路径不能位于 /storage/ 或 /sdcard/ 目录内</string>
     <string name="loop_paths_section">循环路径</string>
@@ -655,7 +649,6 @@
     <!-- SUS Map related strings -->
     <string name="susfs_tab_sus_maps">SUS映射</string>
     <string name="susfs_sus_map_label">库文件路径</string>
-    <string name="susfs_sus_map_placeholder">/data/adb/modules/my_module/zygisk/arm64-v8a.so</string>
     <string name="susfs_add_sus_map">添加SUS映射</string>
     <string name="susfs_edit_sus_map">编辑SUS映射</string>
     <string name="susfs_sus_map_added_success">SUS映射添加成功: %1$s</string>
@@ -669,6 +662,7 @@
     <string name="sus_maps_description_text">从 /proc/self/[maps|smaps|smaps_rollup|map_files|mem|pagemap] 中隐藏内存映射的真实文件路径。请注意：此功能不支持隐藏匿名内存映射，也无法隐藏由注入库本身产生的内联钩子或 PLT 钩子。</string>
     <string name="sus_maps_warning">重要提示：对于具备完善注入检测机制的应用，此功能可能无法有效绕过检测。</string>
     <string name="sus_maps_debug_info">首先通过 ps -enf 查找目标应用的 PID 和 UID，然后检查 /proc/&lt;pid&gt;/maps 中的相关路径，并与 /proc/1/mountinfo 中的设备号进行比对以确保一致性。只有当设备号一致时，隐藏映射才能正常工作。</string>
+    <!-- Log Viewer -->
     <string name="log_viewer_title">日志查看器</string>
     <string name="log_viewer_back">返回</string>
     <string name="log_viewer_search">搜索</string>
@@ -740,7 +734,7 @@
     <string name="module_shortcut_icon_pick">选择自定义图标</string>
     <string name="module_shortcut_add">添加快捷方式</string>
     <string name="module_shortcut_not_supported">启动器不支持桌面快捷方式。</string>
-    <string name="module_shortcut_should_not_empty">桌面快捷方式名称不得为空</string>
+    <string name="module_shortcut_should_not_empty">"桌面快捷方式名称不得为空"</string>
     <string name="module_shortcut_created">已在桌面创建快捷方式。</string>
     <string name="module_shortcut_updated">快捷方式已更新。</string>
     <string name="module_shortcut_delete">删除快捷方式</string>
