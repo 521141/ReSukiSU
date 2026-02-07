@@ -34,6 +34,9 @@ pub fn booted_load() -> Result<()> {
     let buf = fs::read_to_string(path)?;
 
     let json: Config = serde_json::from_str(&buf)?;
+    if json.hash.is_empty() || json.size == 0 {
+        return Ok(());
+    }
     let Ok(hash) = json.hash_bytes() else {
         return Ok(());
     };
@@ -53,6 +56,21 @@ pub fn parse_hash(s: &str) -> Result<[u8; 64], String> {
     hash.copy_from_slice(bytes);
 
     Ok(hash)
+}
+
+pub fn clear() -> Result<()> {
+    let empty = Config {
+        size: 0,
+        hash: String::new(),
+    };
+
+    let string = serde_json::to_string_pretty(&empty)?;
+
+    fs::write(defs::DYNAMIC_MANAGER, string)?;
+
+    ksucalls::dynamic_manager_clear()?;
+
+    Ok(())
 }
 
 pub fn set(size: u32, hash: [u8; 64]) -> Result<()> {

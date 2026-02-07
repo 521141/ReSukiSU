@@ -77,6 +77,8 @@
     <string name="module_changelog">Список изменений</string>
     <string name="settings_profile_template">Шаблон профиля приложения</string>
     <string name="settings_profile_template_summary">Управление локальным и онлайн-шаблоном профиля приложения</string>
+    <string name="settings_check_update">Уведомления об обновлениях</string>
+    <string name="settings_check_update_summary">Автоматически проверять обновления модулей и менеджера</string>
     <string name="app_profile_template_create">Создать шаблон</string>
     <string name="app_profile_template_edit">Редактирование шаблона</string>
     <string name="app_profile_template_id">Идентификационный номер</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">Не удалось сохранить шаблон</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="module_changelog_failed">Не удалось получить список изменений: %s</string>
-    <string name="settings_check_update">Проверка обновлений</string>
-    <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения</string>
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="action">Действие</string>
     <string name="close">Закрыть</string>
@@ -138,10 +138,6 @@
     <string name="confirm">Подтвердить</string>
     <string name="cancel">Отмена</string>
     <!-- Backup related -->
-    <string name="backup_success">Резервная копия создана успешно</string>
-    <string name="backup_failed">Ошибка резервного копирования: %1$s</string>
-    <string name="backup_modules">Резервное копирование модулей</string>
-    <string name="restore_modules">Восстановить модули</string>
     <!-- Restore related messages -->
     <string name="restore_success">Модули восстановлены, требуется перезагрузка</string>
     <string name="restore_failed">Ошибка восстановления: %1$s</string>
@@ -160,19 +156,10 @@
     <string name="restore_allowlist">Восстановить список</string>
     <string name="settings_custom_background">Пользовательский фон приложения</string>
     <string name="settings_custom_background_summary">Выберите изображение в качестве фона</string>
-    <string name="settings_card_alpha">Прозрачность панели навигации</string>
     <string name="home_android_version">Версия Android</string>
     <string name="home_device_model">Модель устройства</string>
     <string name="su_not_allowed">Предоставление рут-доступа %s запрещено</string>
-    <string name="settings_disable_su">Отключить su совместимость</string>
-    <string name="settings_disable_su_summary">Временно отключить все приложения от получения рут-доступа через su команду (запущенные процессы с рут-доступом не будут затронуты).</string>
-    <string name="settings_disable_kernel_umount">Отключить размонтирование ядра</string>
-    <string name="settings_disable_kernel_umount_summary">Временное отключение умного уровня ядра KernelSU.</string>
-    <string name="settings_enable_enhanced_security">Включить повышенную безопасность</string>
-    <string name="settings_enable_enhanced_security_summary">Включить более строгие политики безопасности.</string>
     <string name="settings_mode_default">По умолчанию</string>
-    <string name="settings_mode_temp_enable">Временно включены</string>
-    <string name="settings_mode_always_enable">Постоянно включены</string>
     <string name="module_install_multiple_confirm_with_names">Уверены, что хотите установить следующие %1$d модули? \n\n%2$s</string>
     <string name="more_settings">Доп. настройки</string>
     <string name="selinux">SELinux</string>
@@ -229,13 +216,11 @@
     <string name="home_kpm_version">Статус KPM</string>
     <string name="close_notice">Закрыть</string>
     <string name="kernel_module_notice">Следующие модульные функции ядра были разработаны KernelPatch и изменены для включения в него функций модуля ядра SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">Будущее SukiSU Ultra</string>
     <string name="kpm_control_success">Успешно</string>
     <string name="kpm_control_failed">Провален</string>
-    <string name="home_click_to_ContributionCard_kernelsu">В будущем SukiSU Ultra будет относительно независимым ответвлением KSU, но мы по-прежнему ценим официальный KernelSU и MKSU и т.д. за их вклад!</string>
-    <string name="not_supported">Не поддерживается</string>
-    <string name="supported">Поддерживается</string>
-    <string name="kernel_patched">Ядро не изменено</string>
+    <string name="kpm_not_supported">Не поддерживается (%s)</string>
+    <string name="kpm_supported">Поддерживается (%s)</string>
+    <string name="kernel_not_patched">Ядро не изменено</string>
     <string name="kernel_not_enabled">Ядро не настроено</string>
     <string name="custom_settings">Персонализация</string>
     <string name="kpm_install_mode">Установка KPM</string>
@@ -298,10 +283,6 @@
     <string name="show_kpm_info">Скрыть статус KPM</string>
     <string name="show_kpm_info_summary">Скрывать информацию и функции KPM на домашней странице и панели навигации</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Движок WebUI</string>
-    <string name="engine_auto_select">Автовыбор</string>
-    <string name="engine_force_webuix">WebUI X</string>
-    <string name="engine_force_ksu">KSU WebUI</string>
     <string name="use_webuix_eruda">Вставить Eruda в WebUI X</string>
     <string name="use_webuix_eruda_summary">Вставьте консоль отладки в WebUI X для упрощения отладки. Для этого требуется включение веб-отладки.</string>
     <!-- DPI setting related strings -->
@@ -320,7 +301,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Язык приложения</string>
     <string name="language_system_default">Как в системе</string>
-    <string name="settings_card_dim">Затемнение карточек</string>
     <!-- Flash related -->
     <string name="error_code">код ошибки</string>
     <string name="check_log">Пожалуйста, проверьте журнал</string>
@@ -502,7 +482,7 @@
     <string name="susfs_backup_file_not_found">Файл резервной копии не найден</string>
     <string name="susfs_backup_invalid_format">Неверный формат файла резервной копии</string>
     <string name="susfs_backup_version_mismatch">Несоответствие версии резервного копирования</string>
-    <string name="susfs_restore_title">Восстановить</string>
+    <string name="restore">Восстановить</string>
     <string name="susfs_restore_description">Восстановить настройки SuSFS из файла резервной копии. Это перезапишет все текущие настройки.</string>
     <string name="susfs_restore_select_file">Выберите файл резервной копии</string>
     <string name="susfs_restore_success" formatted="false">Конфигурация успешно восстановлена из резервной копии, созданной на %s с устройства: %s</string>
@@ -520,7 +500,7 @@
     <string name="susfs_edit_sus_path">Редактировать путь SUS</string>
     <string name="edit_kstat_statically_title">Изменить статическую конфигурацию Kstat</string>
     <string name="edit_kstat_path_title">Редактировать путь Kstat</string>
-    <string name="susfs_save">Сохранить</string>
+    <string name="save">Сохранить</string>
     <string name="edit">Редактировать</string>
     <string name="delete">Удалить</string>
     <string name="update">Обновить</string>
@@ -555,7 +535,6 @@
     <string name="unknown_signature">Неизвестно</string>
     <string name="multi_manager_list">Активный менеджер</string>
     <string name="no_active_manager">Нет активного менеджера</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Реализация Zygisk</string>
     <!-- 循环路径相关 -->
     <string name="susfs_tab_sus_loop_paths">Пути цикла SUS</string>
@@ -583,14 +562,6 @@
     <string name="avc_log_spoofing_warning">Важное замечание:\n
 - Значение по умолчанию в ядре установлено как \'0\'\n
 - Включение этой опции иногда затрудняет разработчикам определение причины при отладке проблем, связанных с разрешениями или SELinux, поэтому пользователям рекомендуется отключать её во время отладки</string>
-    <!-- 模块签名功能描述 -->
-    <string name="module_verified">Проверенные</string>
-    <string name="module_signature_verified">Подпись модуля подтверждена</string>
-    <string name="module_signature_verification">Подтверждение подписи</string>
-    <string name="module_signature_verification_summary">При установке модуля принудительно проверять подпись. (Только для архитектуры ARM)</string>
-    <string name="module_signature_invalid">Неизвестный издатель</string>
-    <string name="module_signature_invalid_message">Неподписанные модули могут быть неполными. Для защиты устройства установка этого модуля была заблокирована.</string>
-    <string name="module_signature_verification_failed">Неподписанные модули могут быть неполными. Вы хотите разрешить установку на этом устройстве следующего модуля от неизвестного издателя?</string>
     <string name="home_hook_type">Типы хуков</string>
     <!-- KPM patching related strings -->
     <string name="kpm_patch_options">Патч KPM</string>
@@ -685,9 +656,6 @@
     <string name="log_viewer_too_many_logs">Слишком много журналов, отображаются только последние записи %1$d</string>
     <string name="log_viewer_load_more">Загрузить больше логов</string>
     <string name="log_viewer_all_logs_loaded">Все логи отображаются</string>
-    <!-- MiUI Uninstall Desc -->
-    <string name="miui_uninstall_title">Подтвердите удаление SukiSU Manager?</string>
-    <string name="miui_uninstall_content">Удаление не повлияет на функциональность вашего root-доступа. Он продолжит работать от этого менеджера.</string>
     <string name="incompatible_kernel_msg">    Текущий менеджер несовместим с этим ядром! Пожалуйста, обновите ядро до версии %2$d или выше (сейчас %1$d)
     </string>
     <string name="umount_path_manager">Управление путями размонтирования</string>
@@ -709,4 +677,8 @@
     <string name="clear_custom_paths">Удалить кастомные пути</string>
     <string name="apply_config">Применить конфигурацию</string>
     <string name="config_applied">Конфигурация применена к ядру</string>
+    <string name="settings_sucompat">Классическая команда su</string>
+    <string name="settings_sucompat_summary">Разрешить root-доступ через /system/bin/su в новых процессах.</string>
+    <string name="settings_kernel_umount">Размонтирование модулей</string>
+    <string name="settings_kernel_umount_summary">Размонтировать модули в ядре для профиля приложения</string>
 </resources>

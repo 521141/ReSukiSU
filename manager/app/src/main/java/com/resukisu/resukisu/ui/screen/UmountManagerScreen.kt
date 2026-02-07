@@ -1,18 +1,62 @@
 package com.resukisu.resukisu.ui.screen
 
 import android.content.Context
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -22,12 +66,24 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.resukisu.resukisu.R
-import com.resukisu.resukisu.ui.component.rememberConfirmDialog
 import com.resukisu.resukisu.ui.component.ConfirmResult
-import com.resukisu.resukisu.ui.theme.CardConfig
+import com.resukisu.resukisu.ui.component.rememberConfirmDialog
+import com.resukisu.resukisu.ui.component.settings.AppBackButton
+import com.resukisu.resukisu.ui.theme.ThemeConfig
 import com.resukisu.resukisu.ui.theme.getCardColors
 import com.resukisu.resukisu.ui.theme.getCardElevation
-import com.resukisu.resukisu.ui.util.*
+import com.resukisu.resukisu.ui.util.LocalSnackbarHost
+import com.resukisu.resukisu.ui.util.addUmountPath
+import com.resukisu.resukisu.ui.util.applyUmountConfigToKernel
+import com.resukisu.resukisu.ui.util.clearCustomUmountPaths
+import com.resukisu.resukisu.ui.util.listUmountPaths
+import com.resukisu.resukisu.ui.util.removeUmountPath
+import com.resukisu.resukisu.ui.util.saveUmountConfig
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,11 +97,11 @@ data class UmountPathEntry(
     val flags: Int,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Destination<RootGraph>
 @Composable
 fun UmountManagerScreen(navigator: DestinationsNavigator) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -53,11 +109,31 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
 
     var pathList by remember { mutableStateOf<List<UmountPathEntry>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    var isRefreshing by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
+    val hazeState = if (ThemeConfig.backgroundImageLoaded) rememberHazeState() else null
+
+    val hazeStyle = if (ThemeConfig.backgroundImageLoaded) HazeStyle(
+        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+            alpha = 0.8f
+        ),
+        tint = HazeTint(Color.Transparent)
+    ) else null
+
+    val collapsedFraction = scrollBehavior.state.collapsedFraction
+    val modifier = if (ThemeConfig.backgroundImageLoaded && hazeStyle != null && hazeState != null) {
+        Modifier.hazeEffect(hazeState) {
+            style = hazeStyle
+            noiseFactor = 0f
+            blurRadius = 30.dp
+            alpha = collapsedFraction
+        }
+    }
+    else Modifier
 
     fun loadPaths() {
         scope.launch(Dispatchers.IO) {
-            isLoading = true
             val result = listUmountPaths()
             val entries = parseUmountPaths(result)
             withContext(Dispatchers.Main) {
@@ -68,28 +144,32 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
     }
 
     LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset =
+            scrollBehavior.state.heightOffsetLimit
         loadPaths()
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
+                modifier = modifier,
                 title = { Text(stringResource(R.string.umount_path_manager)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
+                    AppBackButton(
+                        onClick = {
+                            navigator.popBackStack()
+                        }
+                    )
                 },
-                actions = {
-                    IconButton(onClick = { loadPaths() }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                    }
-                },
+                windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 12.dp)),
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(
-                        alpha = CardConfig.cardAlpha
-                    )
+                    containerColor =
+                        if (ThemeConfig.backgroundImageLoaded) Color.Transparent
+                        else MaterialTheme.colorScheme.surfaceContainer,
+                    scrolledContainerColor =
+                        if (ThemeConfig.backgroundImageLoaded) Color.Transparent
+                        else MaterialTheme.colorScheme.surfaceContainer,
                 )
             )
         },
@@ -100,50 +180,113 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                 Icon(Icons.Filled.Add, contentDescription = null)
             }
         },
-        snackbarHost = { SnackbarHost(snackBarHost) }
+        snackbarHost = { SnackbarHost(snackBarHost) },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
-            Card(
+        if (isLoading) { // 初次加载时动画
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SPACING_LARGE),
-                colors = getCardColors(MaterialTheme.colorScheme.primaryContainer),
-                elevation = getCardElevation()
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    modifier = Modifier.padding(SPACING_LARGE)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(SPACING_MEDIUM))
-                    Text(
-                        text = stringResource(R.string.umount_path_restart_notice),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
+                LoadingIndicator()
             }
-
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
+        }
+        else {
+            PullToRefreshBox(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    loadPaths()
+                    isRefreshing = false
+                },
+                indicator = {
+                    PullToRefreshDefaults.LoadingIndicator(
+                        state = pullToRefreshState,
+                        isRefreshing = isRefreshing,
+                        modifier = Modifier
+                            .padding(top = paddingValues.calculateTopPadding())
+                            .align(Alignment.TopCenter),
+                    )
+                },
+                modifier = if (hazeState != null) Modifier.hazeSource(hazeState) else Modifier
+            ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = SPACING_LARGE, vertical = SPACING_MEDIUM),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    contentPadding = PaddingValues(
+                        horizontal = SPACING_LARGE,
+                        vertical = SPACING_MEDIUM
+                    ),
                     verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM)
                 ) {
+                    item {
+                        Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding()))
+                    }
+
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp),
+                            colors = getCardColors(MaterialTheme.colorScheme.primaryContainer),
+                            elevation = getCardElevation()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Info,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(10.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = stringResource(R.string.umount_path_restart_notice),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+
+                    if (pathList.isEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(15.dp))
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp),
+                                elevation = getCardElevation()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(5.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Info,
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(10.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.no_any_umount_path),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     items(pathList, key = { it.path }) { entry ->
                         UmountPathCard(
                             entry = entry,
@@ -184,7 +327,8 @@ fun UmountManagerScreen(navigator: DestinationsNavigator) {
                                         if (confirmDialog.awaitConfirm(
                                                 title = context.getString(R.string.confirm_action),
                                                 content = context.getString(R.string.confirm_clear_custom_paths)
-                                            ) == ConfirmResult.Confirmed) {
+                                            ) == ConfirmResult.Confirmed
+                                        ) {
                                             withContext(Dispatchers.IO) {
                                                 val success = clearCustomUmountPaths()
                                                 withContext(Dispatchers.Main) {

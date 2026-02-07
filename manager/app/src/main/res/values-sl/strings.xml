@@ -77,6 +77,8 @@
     <string name="module_changelog">Dnevnik sprememb</string>
     <string name="settings_profile_template">Predloga za aplikacijski profil</string>
     <string name="settings_profile_template_summary">Upravljaj z lokalnimi in spletnimi predlogami za aplikacijski profil</string>
+    <string name="settings_check_update">Obvestila o posodobitvah</string>
+    <string name="settings_check_update_summary">Samodejno preveri posodobitve modulov in upravitelja</string>
     <string name="app_profile_template_create">Ustvari predlogo</string>
     <string name="app_profile_template_edit">Uredi predlogo</string>
     <string name="app_profile_template_id">id</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">Napaka pri shranjevanju predloge</string>
     <string name="app_profile_template_import_empty">Odložišče je prazno!</string>
     <string name="module_changelog_failed">Napaka pri pridobivanju dnevnika sprememb: %s</string>
-    <string name="settings_check_update">Check update</string>
-    <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
     <string name="grant_root_failed">Failed to grant root!</string>
     <string name="action">Action</string>
     <string name="close">Close</string>
@@ -133,10 +133,6 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <!-- Backup related -->
-    <string name="backup_success">Backup successful (tar.gz)</string>
-    <string name="backup_failed">Backup failed: %1$s</string>
-    <string name="backup_modules">backup modules</string>
-    <string name="restore_modules">restore modules</string>
     <!-- Restore related messages -->
     <string name="restore_success">Modules restored successfully, restart required</string>
     <string name="restore_failed">Restore failed: %1$s</string>
@@ -155,12 +151,9 @@
     <string name="restore_allowlist">Restore Allowlist</string>
     <string name="settings_custom_background">Custom App Background</string>
     <string name="settings_custom_background_summary">Select an image as background</string>
-    <string name="settings_card_alpha">Navigation bar transparency</string>
     <string name="home_android_version">Android version</string>
     <string name="home_device_model">Device model</string>
     <string name="su_not_allowed">Granting superuser to %s is not allowed</string>
-    <string name="settings_disable_su">Disable su compatibility</string>
-    <string name="settings_disable_su_summary">Temporarily disable any applications from obtaining root privileges via the ⁠su command (existing root processes will not be affected).</string>
     <string name="module_install_multiple_confirm_with_names">Sure you want to install the following %1$d modules? \n\n%2$s</string>
     <string name="more_settings">More settings</string>
     <string name="selinux">SELinux</string>
@@ -213,13 +206,11 @@
     <string name="home_kpm_version">KPM Version</string>
     <string name="close_notice">Close</string>
     <string name="kernel_module_notice">The following kernel module functions were developed by KernelPatch and modified to include the kernel module functions of SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra Look forward to</string>
     <string name="kpm_control_success">Success</string>
     <string name="kpm_control_failed">Failed</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra will be a relatively independent branch of KSU in the future, but we still appreciate the official KernelSU and MKSU etc. for their contributions!</string>
-    <string name="not_supported">Unsupported</string>
-    <string name="supported">Supported</string>
-    <string name="kernel_patched">Kernel not patched</string>
+    <string name="kpm_not_supported">Unsupported (%s)</string>
+    <string name="kpm_supported">Supported (%s)</string>
+    <string name="kernel_not_patched">Kernel not patched</string>
     <string name="kernel_not_enabled">Kernel not configured</string>
     <string name="custom_settings">Custom settings</string>
     <string name="kpm_install_mode">KPM Install</string>
@@ -282,10 +273,6 @@
     <string name="show_kpm_info">Display KPM Function</string>
     <string name="show_kpm_info_summary">Display KPM information and Function in home and bottom bar (Need to reopen the app)</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Select the WebUI engine to use</string>
-    <string name="engine_auto_select">Automatic Selection</string>
-    <string name="engine_force_webuix">Force the use of WebUI X</string>
-    <string name="engine_force_ksu">Mandatory use of KSU WebUI</string>
     <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
     <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on.</string>
     <!-- DPI setting related strings -->
@@ -304,7 +291,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">App Language</string>
     <string name="language_system_default">Follow System</string>
-    <string name="settings_card_dim">Card Darkness Adjustment</string>
     <!-- Flash related -->
     <string name="error_code">error code</string>
     <string name="check_log">Please check the log</string>
@@ -343,20 +329,8 @@
     <string name="menu_options">Menu Options</string>
     <string name="sort_options">Sort by</string>
     <string name="app_categories">Application Type Selection</string>
-    <!-- SuSFS Configuration -->
-    <!-- SuSFS Reset Confirmation -->
-    <!-- SuSFS Toast Messages -->
-    <!-- SuSFS Settings Item -->
-    <!-- 开机自启动相关 -->
-    <!-- SuSFS Tab Titles -->
-    <!-- SuSFS Dialog Actions -->
-    <!-- SuSFS Path Management -->
-    <!-- SuSFS Umount Mode -->
-    <!-- SuSFS Run Umount -->
-    <!-- SuSFS Reset Categories -->
-    <!-- SuSFS Path Settings -->
-    <!-- SuSFS Enabled Features -->
-    <!-- Feature Labels -->
-    <!-- 可切换状态 -->
-    <!-- Settings related strings -->
+    <string name="settings_sucompat">Preusmeri su binarno datoteko</string>
+    <string name="settings_sucompat_summary">Preusmeri /system/bin/su na ksud za aplikacije z dovoljenjem Superuporabnika v profilu aplikacije; velja samo za nove procese.</string>
+    <string name="settings_kernel_umount">Jedrno odklapljanje</string>
+    <string name="settings_kernel_umount_summary">Vedenje odklapljanja na ravni jedra, ki ga nadzoruje KernelSU</string>
 </resources>

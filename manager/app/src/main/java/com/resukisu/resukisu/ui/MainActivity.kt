@@ -1,47 +1,60 @@
 package com.resukisu.resukisu.ui
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.NavHostGraphSpec
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.ui.activity.component.BottomBar
-import com.resukisu.resukisu.ui.activity.util.AnimatedBottomBar
-import com.resukisu.resukisu.ui.activity.util.DataRefreshUtils
 import com.resukisu.resukisu.ui.activity.util.DisplayUtils
 import com.resukisu.resukisu.ui.activity.util.ThemeChangeContentObserver
 import com.resukisu.resukisu.ui.activity.util.ThemeUtils
@@ -50,11 +63,19 @@ import com.resukisu.resukisu.ui.component.InstallConfirmationDialog
 import com.resukisu.resukisu.ui.component.ZipFileInfo
 import com.resukisu.resukisu.ui.screen.BottomBarDestination
 import com.resukisu.resukisu.ui.theme.KernelSUTheme
+import com.resukisu.resukisu.ui.theme.ThemeConfig
+import com.resukisu.resukisu.ui.util.LocalHandlePageChange
+import com.resukisu.resukisu.ui.util.LocalPagerState
+import com.resukisu.resukisu.ui.util.LocalSelectedPage
 import com.resukisu.resukisu.ui.util.LocalSnackbarHost
 import com.resukisu.resukisu.ui.util.install
 import com.resukisu.resukisu.ui.viewmodel.HomeViewModel
 import com.resukisu.resukisu.ui.viewmodel.SuperUserViewModel
+import com.resukisu.resukisu.ui.webui.WebUIActivity
+import com.resukisu.resukisu.ui.webui.WebUIXActivity
 import com.resukisu.resukisu.ui.webui.initPlatform
+import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import zako.zako.zako.zakoui.screen.moreSettings.util.LocaleHelper
@@ -78,6 +99,8 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase?.let { LocaleHelper.applyLanguage(it) })
     }
+
+    private val intentState = MutableStateFlow(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
@@ -142,20 +165,8 @@ class MainActivity : ComponentActivity() {
                 KernelSUTheme {
                     val navController = rememberNavController()
                     val snackBarHostState = remember { SnackbarHostState() }
-                    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
-
-                    val bottomBarRoutes = remember {
-                        BottomBarDestination.entries.map { it.direction.route }.toSet()
-                    }
 
                     val navigator = navController.rememberDestinationsNavigator()
-
-                    BackHandler(currentDestination != null && currentDestination.route != HomeScreenDestination.route) {
-                        navigator.navigate(HomeScreenDestination) {
-                            navigator.clearBackStack(NavGraphs.root as NavHostGraphSpec)
-                            launchSingleTop = true
-                        }
-                    }
 
                     InstallConfirmationDialog(
                         show = showConfirmationDialog.value,
@@ -187,80 +198,53 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    val showBottomBar = when (currentDestination?.route) {
-                        ExecuteModuleActionScreenDestination.route -> false
-                        else -> true
-                    }
-
                     LaunchedEffect(Unit) {
                         initPlatform()
                     }
 
+                    ShortcutIntentHandler(
+                        intentState = intentState,
+                        navigator = navigator
+                    )
+
                     CompositionLocalProvider(
-                        LocalSnackbarHost provides snackBarHostState
+                        LocalSnackbarHost provides snackBarHostState,
                     ) {
-                        Scaffold(
-                            bottomBar = {
-                                AnimatedBottomBar.AnimatedBottomBarWrapper(
-                                    showBottomBar = showBottomBar,
-                                    content = { BottomBar(navController) }
-                                )
-                            },
-                            contentWindowInsets = WindowInsets(0, 0, 0, 0)
-                        ) { innerPadding ->
-                            DestinationsNavHost(
-                                modifier = Modifier.padding(innerPadding),
-                                navGraph = NavGraphs.root as NavHostGraphSpec,
-                                navController = navController,
-                                defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                                    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                        // If the target is a detail page (not a bottom navigation page), slide in from the right
-                                        if (targetState.destination.route !in bottomBarRoutes) {
-                                            slideInHorizontally(initialOffsetX = { it })
-                                        } else {
-                                            // Otherwise (switching between bottom navigation pages), use fade in
-                                            fadeIn(animationSpec = tween(340))
-                                        }
-                                    }
-
-                                    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                        // If navigating from the home page (bottom navigation page) to a detail page, slide out to the left
-                                        if (initialState.destination.route in bottomBarRoutes && targetState.destination.route !in bottomBarRoutes) {
-                                            slideOutHorizontally(targetOffsetX = { -it / 4 }) + fadeOut()
-                                        } else {
-                                            // Otherwise (switching between bottom navigation pages), use fade out
-                                            fadeOut(animationSpec = tween(340))
-                                        }
-                                    }
-
-                                    override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                        // If returning to the home page (bottom navigation page), slide in from the left
-                                        if (targetState.destination.route in bottomBarRoutes) {
-                                            slideInHorizontally(initialOffsetX = { -it / 4 }) + fadeIn()
-                                        } else {
-                                            // Otherwise (e.g., returning between multiple detail pages), use default fade in
-                                            fadeIn(animationSpec = tween(340))
-                                        }
-                                    }
-
-                                    override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                        // If returning from a detail page (not a bottom navigation page), scale down and fade out
-                                        if (initialState.destination.route !in bottomBarRoutes) {
-                                            scaleOut(targetScale = 0.9f) + fadeOut()
-                                        } else {
-                                            // Otherwise, use default fade out
-                                            fadeOut(animationSpec = tween(340))
-                                        }
-                                    }
+                        DestinationsNavHost(
+                            navGraph = NavGraphs.root as NavHostGraphSpec,
+                            navController = navController,
+                            defaultTransitions = object :
+                                NavHostAnimatedDestinationStyle() {
+                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    slideInHorizontally(initialOffsetX = { it })
                                 }
-                            )
-                        }
+
+                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    slideOutHorizontally(targetOffsetX = { -it / 4 }) + fadeOut()
+                                }
+
+                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    slideInHorizontally(initialOffsetX = { -it / 4 }) + fadeIn()
+                                }
+
+                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    scaleOut(targetScale = 0.9f) + fadeOut()
+                                }
+                            }
+                        )
                     }
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Increment intentState to trigger LaunchedEffect re-execution
+        intentState.value += 1
     }
 
     private fun initializeViewModels() {
@@ -280,10 +264,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // 数据刷新协程
-        DataRefreshUtils.startDataRefreshCoroutine(lifecycleScope)
-        DataRefreshUtils.startSettingsMonitorCoroutine(lifecycleScope, this, settingsStateFlow)
-
         // 初始化主题相关设置
         ThemeUtils.initializeThemeSettings(this, settingsStateFlow)
     }
@@ -292,24 +272,8 @@ class MainActivity : ComponentActivity() {
         try {
             super.onResume()
             ThemeUtils.onActivityResume()
-
-            // 仅在需要时刷新数据
-            if (isInitialized) {
-                refreshData()
-            }
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-
-    private fun refreshData() {
-        lifecycleScope.launch {
-            try {
-                superUserViewModel.fetchAppList()
-                DataRefreshUtils.refreshData(lifecycleScope)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         }
     }
 
@@ -328,6 +292,179 @@ class MainActivity : ComponentActivity() {
             super.onDestroy()
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+}
+
+/**
+ * @param navigator 页面导航
+ */
+@Destination<RootGraph>(start = true)
+@Composable
+fun MainScreen(navigator: DestinationsNavigator) {
+    // 页面隐藏处理
+    val activity = LocalActivity.current as MainActivity
+    val settings by activity.settingsStateFlow.collectAsState()
+
+    val pages = remember(settings) {
+        BottomBarDestination.getPages(settings)
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+    var uiSelectedPage by rememberSaveable { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(
+        initialPage = uiSelectedPage,
+        pageCount = { pages.size }
+    )
+    var userScrollEnabled by remember { mutableStateOf(true) }
+    var animating by remember { mutableStateOf(false) }
+    var animateJob by remember { mutableStateOf<Job?>(null) }
+    var lastRequestedPage by remember { mutableIntStateOf(pagerState.currentPage) }
+    val hazeState = if (ThemeConfig.backgroundImageLoaded) rememberHazeState() else null
+
+    val handlePageChange: (Int) -> Unit = remember(pagerState, coroutineScope) {
+        { page ->
+            uiSelectedPage = page
+            if (page == pagerState.currentPage) {
+                if (animateJob != null && lastRequestedPage != page) {
+                    animateJob?.cancel()
+                    animateJob = null
+                    animating = false
+                    userScrollEnabled = true
+                }
+                lastRequestedPage = page
+            } else {
+                if (animateJob != null && lastRequestedPage == page) {
+                    // Already animating to the requested page
+                } else {
+                    animateJob?.cancel()
+                    animating = true
+                    userScrollEnabled = false
+                    val job = coroutineScope.launch {
+                        try {
+                            pagerState.animateScrollToPage(page)
+                        } finally {
+                            if (animateJob === this) {
+                                userScrollEnabled = true
+                                animating = false
+                                animateJob = null
+                            }
+                        }
+                    }
+                    animateJob = job
+                    lastRequestedPage = page
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            if (!animating) uiSelectedPage = page
+        }
+    }
+
+    BackHandler {
+        if (pagerState.currentPage != 0) {
+            handlePageChange(0)
+        } else {
+            activity.moveTaskToBack(true)
+        }
+    }
+
+    CompositionLocalProvider(
+        LocalPagerState provides pagerState,
+        LocalHandlePageChange provides handlePageChange,
+        LocalSelectedPage provides uiSelectedPage
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                BottomBar(pages, hazeState)
+            },
+            containerColor = Color.Transparent
+        ) { innerPadding ->
+            HorizontalPager(
+                modifier = Modifier.fillMaxSize(),
+                state = pagerState,
+                beyondViewportPageCount = 2,
+                userScrollEnabled = userScrollEnabled,
+            ) {
+                val bottomPadding = remember(innerPadding) {
+                    innerPadding.calculateBottomPadding()
+                }
+
+                val destination = pages[it]
+                destination.direction(navigator, bottomPadding, hazeState)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShortcutIntentHandler(
+    intentState: MutableStateFlow<Int>,
+    navigator: DestinationsNavigator
+) {
+    val activity = LocalActivity.current ?: return
+    val context = LocalContext.current
+    val intentStateValue by intentState.collectAsState()
+    LaunchedEffect(intentStateValue) {
+        val intent = activity.intent
+        val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect
+        when (type) {
+            "module_action" -> {
+                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
+                navigator.navigate(ExecuteModuleActionScreenDestination(moduleId)) {
+                    launchSingleTop = true
+                }
+            }
+
+            "module_webui" -> {
+                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
+                val moduleName = intent.getStringExtra("module_name") ?: moduleId
+
+                val webuixEngine = Intent(context, WebUIXActivity::class.java)
+                val ksuEngine = Intent(context, WebUIActivity::class.java)
+
+                val prefs = context.getSharedPreferences("settings", MODE_PRIVATE)
+                val moduleSettings = context.getSharedPreferences("module_settings", MODE_PRIVATE)
+                val moduleEngine =
+                    moduleSettings.getString(moduleId + "_webui", "default") ?: "default"
+
+                var defaultEngine = prefs.getString("webui_engine", "custom") ?: "custom"
+
+                if (defaultEngine == "default" || defaultEngine == "wx") { // 旧版兼容
+                    prefs.edit(commit = true) {
+                        putString("webui_engine", "webuix")
+                    }
+                    defaultEngine = "webuix"
+                }
+
+                val selectedEngine =
+                    when (moduleEngine) { // 优先处理模块独立设置，如果为默认，则使用全局设置，参见ModuleWebUIEngineScreen
+                        "webuix" -> webuixEngine
+                        "ksu" -> ksuEngine
+                        else -> when (defaultEngine) {
+                            "webuix" -> webuixEngine
+                            "ksu" -> ksuEngine
+                            else -> ksuEngine
+                        }
+                }
+
+                val webIntent = selectedEngine
+                    .setData("kernelsu://webui/$moduleId".toUri())
+                    .putExtra("id", moduleId)
+                    .putExtra("name", moduleName)
+                    .putExtra("from_webui_shortcut", true)
+                    .addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    )
+                context.startActivity(webIntent)
+            }
+
+            else -> return@LaunchedEffect
         }
     }
 }

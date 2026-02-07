@@ -7,29 +7,49 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.zIndex
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.kyant.m3color.hct.Hct
+import com.kyant.m3color.scheme.SchemeTonalSpot
 import com.resukisu.resukisu.ui.theme.util.BackgroundTransformation
 import com.resukisu.resukisu.ui.theme.util.saveTransformedBackground
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -41,6 +61,7 @@ import java.io.FileOutputStream
 object ThemeConfig {
     // 主题状态
     var customBackgroundUri by mutableStateOf<Uri?>(null)
+    var backgroundDim by mutableFloatStateOf(0f)
     var forceDarkMode by mutableStateOf<Boolean?>(null)
     var currentTheme by mutableStateOf<ThemeColors>(ThemeColors.Default)
     var useDynamicColor by mutableStateOf(false)
@@ -144,6 +165,13 @@ object ThemeManager {
 object BackgroundManager {
     private const val TAG = "BackgroundManager"
 
+    fun saveBackgroundDim(context: Context, dim: Float) {
+        ThemeConfig.backgroundDim = dim
+        context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit(commit = true) {
+            putFloat("background_dim", dim)
+        }
+    }
+
     fun saveAndApplyCustomBackground(
         context: Context,
         uri: Uri,
@@ -174,12 +202,11 @@ object BackgroundManager {
     }
 
     fun loadCustomBackground(context: Context) {
-        val uriString = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
-            .getString("custom_background", null)
+        val prefs = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+        val uriString = prefs.getString("custom_background", null)
 
         val newUri = uriString?.toUri()
-        val preventRefresh = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
-            .getBoolean("prevent_background_refresh", false)
+        val preventRefresh = prefs.getBoolean("prevent_background_refresh", false)
 
         ThemeConfig.preventBackgroundRefresh = preventRefresh
 
@@ -189,6 +216,8 @@ object BackgroundManager {
             ThemeConfig.backgroundImageLoaded = false
             CardConfig.updateBackground(newUri != null)
         }
+
+        ThemeConfig.backgroundDim = prefs.getFloat("background_dim", 0f).coerceIn(0f, 1f)
     }
 
     private fun saveBackgroundUri(context: Context, uri: Uri?) {
@@ -209,7 +238,7 @@ object BackgroundManager {
     private fun copyImageToInternalStorage(context: Context, uri: Uri): Uri? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val fileName = "custom_background_${System.currentTimeMillis()}.jpg"
+            val fileName = "custom_background.jpg"
             val file = File(context.filesDir, fileName)
 
             FileOutputStream(file).use { outputStream ->
@@ -230,13 +259,10 @@ object BackgroundManager {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun KernelSUTheme(
-    darkTheme: Boolean = when(ThemeConfig.forceDarkMode) {
-        true -> true
-        false -> false
-        null -> isSystemInDarkTheme()
-    },
+    darkTheme: Boolean = isInDarkTheme(ThemeConfig.forceDarkMode),
     dynamicColor: Boolean = ThemeConfig.useDynamicColor,
     content: @Composable () -> Unit
 ) {
@@ -247,22 +273,21 @@ fun KernelSUTheme(
     ThemeInitializer(context = context, systemIsDark = systemIsDark)
 
     // 创建颜色方案
-    val colorScheme = createColorScheme(context, darkTheme, dynamicColor)
+    val colorScheme = createColorScheme(darkTheme, dynamicColor)
 
     // 系统栏样式
     SystemBarController(darkTheme)
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
+        motionScheme = MotionScheme.expressive(),
         typography = Typography
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // 背景层
             BackgroundLayer(darkTheme)
             // 内容层
-            Box(modifier = Modifier.fillMaxSize().zIndex(1f)) {
-                content()
-            }
+            content()
         }
     }
 }
@@ -319,11 +344,7 @@ private fun BackgroundLayer(darkTheme: Boolean) {
             .fillMaxSize()
             .zIndex(-2f)
             .background(
-                if (CardConfig.isCustomBackgroundEnabled) {
-                    MaterialTheme.colorScheme.surfaceContainerLow
-                } else {
-                    MaterialTheme.colorScheme.background
-                }
+                MaterialTheme.colorScheme.surfaceContainer
             )
     )
 
@@ -369,73 +390,82 @@ private fun CustomBackgroundLayer(uri: Uri, darkTheme: Boolean) {
             .zIndex(-1f)
             .alpha(alpha)
     ) {
+        val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
         // 背景图片
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .paint(painter = painter, contentScale = ContentScale.Crop)
+                .paint(
+                    painter = painter,
+                    contentScale = ContentScale.Crop,
+                )
                 .graphicsLayer {
-                    this.alpha = (painter.state as? AsyncImagePainter.State.Success)?.let { 1f } ?: 0f
+                    this.alpha =
+                        (painter.state as? AsyncImagePainter.State.Success)?.let { 1f } ?: 0f
+                }
+                .drawWithContent {
+                    drawContent()
+                    drawRect(color = surfaceContainer.copy(alpha = ThemeConfig.backgroundDim))
                 }
         )
-
-        // 遮罩层
-        BackgroundOverlay(darkTheme = darkTheme)
     }
 }
 
 @Composable
-private fun BackgroundOverlay(darkTheme: Boolean) {
-    val dimFactor = CardConfig.cardDim
-
-    // 主要遮罩层
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                if (darkTheme) {
-                    Color.Black.copy(alpha = 0.3f + dimFactor * 0.4f)
-                } else {
-                    Color.White.copy(alpha = 0.05f + dimFactor * 0.3f)
-                }
-            )
-    )
-
-    // 边缘渐变遮罩
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        if (darkTheme) {
-                            Color.Black.copy(alpha = 0.2f + dimFactor * 0.2f)
-                        } else {
-                            Color.Black.copy(alpha = 0.05f + dimFactor * 0.1f)
-                        }
-                    ),
-                    radius = 1000f
-                )
-            )
-    )
-}
-
-@Composable
 private fun createColorScheme(
-    context: Context,
     darkTheme: Boolean,
     dynamicColor: Boolean
 ): ColorScheme {
     return when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) createDynamicDarkColorScheme(context)
-            else createDynamicLightColorScheme(context)
+            val hct = Hct.fromInt(colorResource(id = android.R.color.system_accent1_500).toArgb())
+            val scheme = SchemeTonalSpot(hct, darkTheme, 0.0)
+            MaterialTheme.colorScheme.copy(
+                primary = scheme.primary.toColor(),
+                onPrimary = scheme.onPrimary.toColor(),
+                primaryContainer = scheme.primaryContainer.toColor(),
+                onPrimaryContainer = scheme.onPrimaryContainer.toColor(),
+                inversePrimary = scheme.inversePrimary.toColor(),
+                secondary = scheme.secondary.toColor(),
+                onSecondary = scheme.onSecondary.toColor(),
+                secondaryContainer = scheme.secondaryContainer.toColor(),
+                onSecondaryContainer = scheme.onSecondaryContainer.toColor(),
+                tertiary = scheme.tertiary.toColor(),
+                onTertiary = scheme.onTertiary.toColor(),
+                tertiaryContainer = scheme.tertiaryContainer.toColor(),
+                onTertiaryContainer = scheme.onTertiaryContainer.toColor(),
+                background = scheme.background.toColor(),
+                onBackground = scheme.onBackground.toColor(),
+                surface = scheme.surface.toColor(),
+                onSurface = scheme.onSurface.toColor(),
+                surfaceVariant = scheme.surfaceVariant.toColor(),
+                onSurfaceVariant = scheme.onSurfaceVariant.toColor(),
+                surfaceTint = scheme.primary.toColor(),
+                inverseSurface = scheme.inverseSurface.toColor(),
+                inverseOnSurface = scheme.inverseOnSurface.toColor(),
+                error = scheme.error.toColor(),
+                onError = scheme.onError.toColor(),
+                errorContainer = scheme.errorContainer.toColor(),
+                onErrorContainer = scheme.onErrorContainer.toColor(),
+                outline = scheme.outline.toColor(),
+                outlineVariant = scheme.outlineVariant.toColor(),
+                scrim = scheme.scrim.toColor(),
+                surfaceBright = scheme.surfaceBright.toColor(),
+                surfaceDim = scheme.surfaceDim.toColor(),
+                surfaceContainer = scheme.surfaceContainer.toColor(),
+                surfaceContainerHigh = scheme.surfaceContainerHigh.toColor(),
+                surfaceContainerHighest = scheme.surfaceContainerHighest.toColor(),
+                surfaceContainerLow = scheme.surfaceContainerLow.toColor(),
+                surfaceContainerLowest = scheme.surfaceContainerLowest.toColor(),
+            )
         }
         darkTheme -> createDarkColorScheme()
         else -> createLightColorScheme()
     }
 }
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun Int.toColor(): Color = Color(this)
 
 @Composable
 private fun SystemBarController(darkMode: Boolean) {
@@ -458,30 +488,6 @@ private fun SystemBarController(darkMode: Boolean) {
             }
         )
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.S)
-@Composable
-private fun createDynamicDarkColorScheme(context: Context): ColorScheme {
-    val scheme = dynamicDarkColorScheme(context)
-    return scheme.copy(
-        background = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else scheme.background,
-        surface = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else scheme.surface,
-        onBackground = scheme.onBackground,
-        onSurface = scheme.onSurface
-    )
-}
-
-@RequiresApi(Build.VERSION_CODES.S)
-@Composable
-private fun createDynamicLightColorScheme(context: Context): ColorScheme {
-    val scheme = dynamicLightColorScheme(context)
-    return scheme.copy(
-        background = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else scheme.background,
-        surface = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else scheme.surface,
-        onBackground = scheme.onBackground,
-        onSurface = scheme.onSurface
-    )
 }
 
 @Composable
@@ -590,4 +596,14 @@ fun Context.saveThemeColors(themeName: String) {
 
 fun Context.saveDynamicColorState(enabled: Boolean) {
     ThemeManager.saveDynamicColorState(this, enabled)
+}
+
+@Composable
+@ReadOnlyComposable
+fun isInDarkTheme(themeMode: Boolean?): Boolean {
+    return when(themeMode) {
+        true -> true // 强制深色
+        false -> false // 强制浅色
+        null -> isSystemInDarkTheme() // 跟随系统
+    }
 }

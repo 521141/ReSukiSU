@@ -36,6 +36,10 @@
     <string name="about">Hakkında</string>
     <string name="module_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz?</string>
     <string name="metamodule_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz? Bu işlem tüm modülleri etkileyecek ve metamodül tarafından sağlanan belirli özellikler (bağlama gibi) artık çalışmayacaktır</string>
+    <string name="settings_sucompat">su ikili dosyasını yeniden yönlendir</string>
+    <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamaların /system/bin/su yürütülerek süper kullanıcı kabuğu almasına izin verir; yalnızca yeni işlemler için etkilidir.</string>
+    <string name="settings_kernel_umount">Çekirdek bağlantısını kes</string>
+    <string name="settings_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesinde bağlantı kesme davranışı</string>
     <string name="module_uninstall_success">%s kaldırıldı</string>
     <string name="module_uninstall_failed">Kaldırılamadı: %s</string>
     <string name="module_version">Sürüm</string>
@@ -79,6 +83,8 @@
     <string name="module_changelog">Değişiklik günlüğü</string>
     <string name="settings_profile_template">Uygulama Profili Şablonu</string>
     <string name="settings_profile_template_summary">Uygulama Profil Şablonunu yerel ve çevrimiçi olarak yönetin</string>
+    <string name="settings_check_update">Güncelleme bildirimleri</string>
+    <string name="settings_check_update_summary">Modül ve yönetici güncellemelerini otomatik olarak kontrol et</string>
     <string name="app_profile_template_create">Şablon oluştur</string>
     <string name="app_profile_template_edit">Şablonu düzenle</string>
     <string name="app_profile_template_id">Kimlik</string>
@@ -99,8 +105,6 @@
     <string name="app_profile_template_save_failed">Şablon kaydedilemedi</string>
     <string name="app_profile_template_import_empty">Panodaki veri boş!</string>
     <string name="module_changelog_failed">Değişiklik günlüğü alılamadı: %s</string>
-    <string name="settings_check_update">Güncelleme kontrolü</string>
-    <string name="settings_check_update_summary">Uygulama açıldığında otomatik olarak güncellemeleri kontrol et</string>
     <string name="grant_root_failed">Root yetkisi verilemedi!</string>
     <string name="action">Eylem</string>
     <string name="close">Kapat</string>
@@ -138,10 +142,6 @@
     <string name="confirm">Onayla</string>
     <string name="cancel">İptal</string>
     <!-- Backup related -->
-    <string name="backup_success">Yedekleme başarılı (tar.gz)</string>
-    <string name="backup_failed">Yedekleme başarısız: %1$s</string>
-    <string name="backup_modules">Modülleri yedekle</string>
-    <string name="restore_modules">Modülleri geri yükle</string>
     <!-- Restore related messages -->
     <string name="restore_success">Modüller başarıyla geri yüklendi, yeniden başlatma gerekiyor</string>
     <string name="restore_failed">Geri yükleme başarısız: %1$s</string>
@@ -160,21 +160,12 @@
     <string name="restore_allowlist">İzin verilen listesini geri yükle</string>
     <string name="settings_custom_background">Özel Uygulama Arka Planı</string>
     <string name="settings_custom_background_summary">Bir görüntü seçin ve arka plan olarak ayarlayın</string>
-    <string name="settings_card_alpha">Geçiş çubuğu şeffaflığı</string>
     <string name="home_android_version">Android sürümü</string>
     <string name="home_device_model">Cihaz modeli</string>
     <string name="su_not_allowed">%s için süper kullanıcı yetkisi verilemiyor</string>
-    <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
-    <string name="settings_disable_su_summary">Herhangi bir uygulamanın ⁠su komutu aracılığıyla root ayrıcalıkları kazanma yeteneğini devre dışı bırakın (mevcut root işlemleri etkilenmeyecektir)</string>
-    <string name="settings_disable_kernel_umount">Çekirdek ayırmasını devre dışı bırak</string>
-    <string name="settings_disable_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesindeki ayırma davranışını devre dışı bırakın</string>
-    <string name="settings_enable_enhanced_security">Gelişmiş güvenliği etkinleştir</string>
-    <string name="settings_enable_enhanced_security_summary">Daha sıkı güvenlik politikalarını etkinleştirin</string>
     <string name="feature_status_unsupported_summary">Çekirdek bu özelliği desteklemiyor</string>
     <string name="feature_status_managed_summary">Bu özellik bir modül tarafından yönetiliyor</string>
     <string name="settings_mode_default">Varsayılan</string>
-    <string name="settings_mode_temp_enable">Geçici olarak etkinleştir</string>
-    <string name="settings_mode_always_enable">Kalıcı olarak etkinleştir</string>
     <string name="module_install_multiple_confirm_with_names">Aşağıdaki %1$d modülü yüklemek istediğinizden emin misiniz? \n\n%2$s</string>
     <string name="more_settings">Daha fazla ayar</string>
     <string name="selinux">SELinux</string>
@@ -234,13 +225,11 @@
     <string name="home_kpm_version">KPM Sürümü</string>
     <string name="close_notice">Kapat</string>
     <string name="kernel_module_notice">Aşağıdaki çekirdek modül işlevleri KernelPatch tarafından geliştirilmiş ve SukiSU Ultra\'nın çekirdek modül işlevlerini içerecek şekilde değiştirilmiştir</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra bekliyor</string>
     <string name="kpm_control_success">Başarılı</string>
     <string name="kpm_control_failed">Başarısız</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra, gelecekte KSU\'nun nispeten bağımsız bir dalı olacak, ancak yine de resmi KernelSU ve MKSU gibi katkılarından dolayı teşekkür ederiz!</string>
-    <string name="not_supported">Desteklenmiyor</string>
-    <string name="supported">Destekleniyor</string>
-    <string name="kernel_patched">Çekirdek yamalanmadı</string>
+    <string name="kpm_not_supported">Desteklenmiyor (%s)</string>
+    <string name="kpm_supported">Destekleniyor (%s)</string>
+    <string name="kernel_not_patched">Çekirdek yamalanmadı</string>
     <string name="kernel_not_enabled">Çekirdek yapılandırılmadı</string>
     <string name="custom_settings">Özel ayarlar</string>
     <string name="kpm_install_mode">KPM Yükleme</string>
@@ -303,10 +292,6 @@
     <string name="show_kpm_info">KPM İşlevini Gizle</string>
     <string name="show_kpm_info_summary">Ana sayfa ve alt çubuktaki KPM bilgilerini ve işlevini gizler</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Kullanılacak WebUI motorunu seç</string>
-    <string name="engine_auto_select">Otomatik Seçim</string>
-    <string name="engine_force_webuix">WebUI X kullanımını zorla</string>
-    <string name="engine_force_ksu">KSU WebUI kullanımını zorunlu kıl</string>
     <string name="use_webuix_eruda">WebUI X\'e Eruda enjekte et</string>
     <string name="use_webuix_eruda_summary">WebUI X\'e bir hata ayıklama konsolu enjekte edin, böylece hata ayıklama daha kolay olur. Web hata ayıklamanın açık olması gerekir.</string>
     <!-- DPI setting related strings -->
@@ -325,7 +310,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Uygulama Dili</string>
     <string name="language_system_default">Sistemi takip et</string>
-    <string name="settings_card_dim">Kart Karanlığını Ayarlama</string>
     <!-- Flash related -->
     <string name="error_code">hata kodu</string>
     <string name="check_log">Lütfen günlük kaydını kontrol edin</string>
@@ -508,7 +492,7 @@
     <string name="susfs_backup_file_not_found">Yedekleme dosyası bulunamadı</string>
     <string name="susfs_backup_invalid_format">Geçersiz yedekleme dosyası formatı</string>
     <string name="susfs_backup_version_mismatch">Yedekleme sürümü uyuşmuyor, ancak geri yüklemeye çalışılacak</string>
-    <string name="susfs_restore_title">Geri Yükle</string>
+    <string name="restore">Geri Yükle</string>
     <string name="susfs_restore_description">SuSFS yapılandırmalarını bir yedekleme dosyasından geri yükleyin. Bu, tüm mevcut ayarların üzerine yazacaktır.</string>
     <string name="susfs_restore_select_file">Yedekleme Dosyası Seç</string>
     <string name="susfs_restore_success" formatted="false">%s tarihinde %s cihazından oluşturulan yedekten yapılandırma başarıyla geri yüklendi</string>
@@ -526,7 +510,7 @@
     <string name="susfs_edit_sus_path">SUS Yolunu Düzenle</string>
     <string name="edit_kstat_statically_title">Kstat Statik Yapılandırmasını Düzenle</string>
     <string name="edit_kstat_path_title">Kstat Yolunu Düzenle</string>
-    <string name="susfs_save">Kaydet</string>
+    <string name="save">Kaydet</string>
     <string name="edit">Düzenle</string>
     <string name="delete">Sil</string>
     <string name="update">Güncelle</string>
@@ -561,7 +545,6 @@
     <string name="unknown_signature">Bilinmiyor</string>
     <string name="multi_manager_list">Aktif Yönetici</string>
     <string name="no_active_manager">Aktif yönetici yok</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Zygisk uygulaması</string>
     <string name="home_meta_module_implement">Meta Modül uygulaması</string>
     <!-- 循环路径相关 -->
@@ -592,12 +575,6 @@
 - Bu özelliği etkinleştirmek, geliştiricilerin bir izin veya SELinux sorunu için hata ayıklaması yaparken sorunun kaynağını bulmalarını zorlaştırabilir. Bu nedenle, bu tür işlemler sırasında özelliğin devre dışı bırakılması tavsiye edilir.</string>
     <!-- 模块签名功能描述 -->
     <string name="module_verified">Doğrulandı</string>
-    <string name="module_signature_verified">Modül imzası doğrulandı</string>
-    <string name="module_signature_verification">İmza Doğrulaması</string>
-    <string name="module_signature_verification_summary">Modülleri yüklerken imza doğrulamasını zorunlu kıl (sadece ARM mimarisi için geçerlidir)</string>
-    <string name="module_signature_invalid">Bilinmeyen yayıncı</string>
-    <string name="module_signature_invalid_message">İmzasız modüller eksik veya değiştirilmiş olabilir. Cihazınızı korumak için bu modülün kurulumu engellenmiştir.</string>
-    <string name="module_signature_verification_failed">İmzasız modüller eksik veya değiştirilmiş olabilir. Bilinmeyen bir yayıncıdan gelen aşağıdaki modülün bu cihaza kurulmasına izin vermek istiyor musunuz?</string>
     <string name="home_hook_type">Hook tipi</string>
     <!-- KPM patching related strings -->
     <string name="kpm_patch_options">KPM Yaması</string>
@@ -717,6 +694,4 @@
     <string name="config_applied">Yapılandırma çekirdeğe uygulandı</string>
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">%d uygulama içeriyor</string>
-    <string name="settings_disable_sulog">Süper kullanıcı günlük kaydını devre dışı bırak</string>
-    <string name="settings_disable_sulog_summary">KernelSU süper kullanıcı erişim günlük kaydını devre dışı bırakır</string>
 </resources>

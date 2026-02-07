@@ -77,6 +77,8 @@
     <string name="module_changelog">変更履歴</string>
     <string name="settings_profile_template">アプリプロファイルのテンプレート</string>
     <string name="settings_profile_template_summary">アプリプロファイルのローカルおよびオンラインテンプレートを管理します。</string>
+    <string name="settings_check_update">更新の通知</string>
+    <string name="settings_check_update_summary">モジュールとマネージャーの更新を自動的にチェックします</string>
     <string name="app_profile_template_create">テンプレートの作成</string>
     <string name="app_profile_template_edit">テンプレートの編集</string>
     <string name="app_profile_template_id">ID</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">テンプレートの保存に失敗しました</string>
     <string name="app_profile_template_import_empty">クリップボードが空です！</string>
     <string name="module_changelog_failed">変更ログの取得に失敗しました: %s</string>
-    <string name="settings_check_update">更新を確認する</string>
-    <string name="settings_check_update_summary">アプリの起動時に更新を自動で確認します。</string>
     <string name="grant_root_failed">root の付与に失敗しました！</string>
     <string name="action">アクション</string>
     <string name="close">閉じる</string>
@@ -136,10 +136,6 @@
     <string name="confirm">確認</string>
     <string name="cancel">キャンセル</string>
     <!-- Backup related -->
-    <string name="backup_success">バックアップが完了しました (tar.gz)</string>
-    <string name="backup_failed">バックアップに失敗: %1$s</string>
-    <string name="backup_modules">モジュールをバックアップ</string>
-    <string name="restore_modules">モジュールを復元</string>
     <!-- Restore related messages -->
     <string name="restore_success">モジュールは正常に復元されました、再起動が必要です</string>
     <string name="restore_failed">復元に失敗: %1$s</string>
@@ -158,17 +154,10 @@
     <string name="restore_allowlist">許可リストを復元</string>
     <string name="settings_custom_background">アプリの背景を変更</string>
     <string name="settings_custom_background_summary">背景にする画像を選択してください</string>
-    <string name="settings_card_alpha">ナビゲーションバーの透過</string>
     <string name="home_android_version">Android バージョン</string>
     <string name="home_device_model">デバイスモデル</string>
     <string name="su_not_allowed">「%s」にスーパーユーザー権限を付与することはできません</string>
-    <string name="settings_disable_su">su の互換性を無効化する</string>
-    <string name="settings_disable_kernel_umount">カーネルアンマウントを無効化</string>
-    <string name="settings_enable_enhanced_security">強化されたセキュリティを有効化</string>
-    <string name="settings_enable_enhanced_security_summary">より厳格なセキュリティポリシーを有効化</string>
     <string name="settings_mode_default">デフォルト</string>
-    <string name="settings_mode_temp_enable">一時的に有効化</string>
-    <string name="settings_mode_always_enable">恒久的に有効化</string>
     <string name="module_install_multiple_confirm_with_names">%1$d 個のモジュールをインストールしてもよろしいですか？\n\n%2$s</string>
     <string name="more_settings">その他の設定</string>
     <string name="selinux">SELinux</string>
@@ -227,13 +216,11 @@
     <string name="home_kpm_version">KPM バージョン</string>
     <string name="close_notice">閉じる</string>
     <string name="kernel_module_notice">以下のカーネルモジュール関数は KernelPatch によって開発され、SukiSU Ultra のカーネルモジュール関数を含むように変更されました</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra の今後にご期待ください</string>
     <string name="kpm_control_success">成功</string>
     <string name="kpm_control_failed">失敗</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra は将来的に KSU から比較的に独立したブランチになりますが、公式の KernelSU や MKSU などの貢献に感謝しています！</string>
-    <string name="not_supported">非対応</string>
-    <string name="supported">対応</string>
-    <string name="kernel_patched">カーネルはパッチされていません</string>
+    <string name="kpm_not_supported">非対応 (%s)</string>
+    <string name="kpm_supported">対応 (%s)</string>
+    <string name="kernel_not_patched">カーネルはパッチされていません</string>
     <string name="kernel_not_enabled">カーネルは未設定です</string>
     <string name="custom_settings">カスタム設定</string>
     <string name="kpm_install_mode">KPM をインストール</string>
@@ -296,10 +283,6 @@
     <string name="show_kpm_info">KPM 機能を非表示</string>
     <string name="show_kpm_info_summary">ホームとボトムバーから KPM の情報と機能を非表示にします。</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">WebUI で使用するエンジン</string>
-    <string name="engine_auto_select">自動選択</string>
-    <string name="engine_force_webuix">WebUI X の使用を強制する</string>
-    <string name="engine_force_ksu">KSU WebUI の使用を強制する</string>
     <string name="use_webuix_eruda">WebUI に Eruda をインジェクトする</string>
     <string name="use_webuix_eruda_summary">デバッグを容易にするために WebUI X にデバッグコンソールを挿入します。Web デバッグが ON になっている必要があります。</string>
     <!-- DPI setting related strings -->
@@ -318,7 +301,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">アプリの言語</string>
     <string name="language_system_default">システムに従う</string>
-    <string name="settings_card_dim">カードの暗さを調整</string>
     <!-- Flash related -->
     <string name="error_code">エラーコード</string>
     <string name="check_log">ログを確認してください</string>
@@ -500,7 +482,7 @@
     <string name="susfs_backup_file_not_found">バックアップファイルが見つかりません</string>
     <string name="susfs_backup_invalid_format">無効なバックアップファイル形式</string>
     <string name="susfs_backup_version_mismatch">バックアップのバージョンが一致しませんが、復元を試みます。</string>
-    <string name="susfs_restore_title">復元</string>
+    <string name="restore">復元</string>
     <string name="susfs_restore_description">SuSFS の構成をバックアップファイルから復元します。これにより、現在の設定がすべて上書きされます。</string>
     <string name="susfs_restore_select_file">バックアップファイルを選択</string>
     <string name="susfs_restore_success" formatted="false">デバイス: %s から「%s」に作成されたバックアップから構成が正常に復元されました。</string>
@@ -517,7 +499,7 @@
     <string name="susfs_edit_sus_path">SUS のパスを編集</string>
     <string name="edit_kstat_statically_title">Kstat 静的構成を編集</string>
     <string name="edit_kstat_path_title">Kstat のパスを編集</string>
-    <string name="susfs_save">保存</string>
+    <string name="save">保存</string>
     <string name="edit">編集</string>
     <string name="delete">消去</string>
     <string name="update">更新</string>
@@ -551,7 +533,6 @@
     <string name="unknown_signature">不明</string>
     <string name="multi_manager_list">有効なマネージャー</string>
     <string name="no_active_manager">有効なマネージャーがありません</string>
-    <string name="default_signature">SukiSU</string>
     <string name="home_zygisk_implement">Zygisk を実装</string>
     <string name="home_meta_module_implement">メタモジュールの実装</string>
     <!-- 循环路径相关 -->
@@ -581,13 +562,6 @@
     <string name="avc_log_spoofing_warning">重要な注意事項:\n
 - カーネルはデフォルトで「0」に設定されています。\n
 - これを有効化すると、開発者が何らかの権限や SELinux の問題をデバッグするときに原因を特定するのが難しくなる場合があるため、デバッグ時はこれを無効化することをお勧めします。</string>
-    <!-- 模块签名功能描述 -->
-    <string name="module_verified">検証済み</string>
-    <string name="module_signature_verified">モジュールの署名が検証されました</string>
-    <string name="module_signature_verification">署名の検証</string>
-    <string name="module_signature_invalid">不明な発行元</string>
-    <string name="module_signature_invalid_message">署名されていないモジュールは不完全な可能性があります。デバイスを保護するため、このモジュールのインストールをブロックしました。</string>
-    <string name="module_signature_verification_failed">署名されていないモジュールは不完全な可能性があります。不明な発行元のモジュールをこのデバイスにインストールすることを許可しますか？</string>
     <string name="home_hook_type">フックタイプ</string>
     <!-- KPM patching related strings -->
     <string name="kpm_patch_options">KPM パッチ</string>
@@ -688,6 +662,8 @@
     <string name="config_applied">カーネルに適用された構成</string>
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">%d 個のアプリが含まれています</string>
-    <string name="settings_disable_sulog">スーパーユーザーログを無効化</string>
-    <string name="settings_disable_sulog_summary">KernelSU スーパーユーザーアクセスログを無効化</string>
+    <string name="settings_sucompat">古典 su 命令</string>
+    <string name="settings_sucompat_summary">/system/bin/su 経由での 根源権限（特権）を 許可します（新規 手順/工程 のみ）</string>
+    <string name="settings_kernel_umount">module の umount</string>
+    <string name="settings_kernel_umount_summary">App Profile に基づき、kernel 側で module を umount します （あぷり ぷろふぁいる に もとづき、かーねる がわで もじゅーる を あんまうんと します）</string>
 </resources>

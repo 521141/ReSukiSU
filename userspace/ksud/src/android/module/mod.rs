@@ -13,7 +13,6 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
-    time::Duration,
 };
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
@@ -24,7 +23,6 @@ use log::{debug, info, warn};
 #[cfg(all(target_os = "android", target_arch = "aarch64"))]
 use mlua::{Function, Lua, Result as LuaResult, Table};
 use regex_lite::Regex;
-use wait_timeout::ChildExt;
 use zip_extensions::zip_extract_file_to_memory;
 
 use crate::{
@@ -175,7 +173,7 @@ pub fn load_sepolicy_rule() -> Result<()> {
     Ok(())
 }
 
-pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool, timeout: Duration) -> Result<()> {
+pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
     let is_module_script = path.as_ref().starts_with(defs::MODULE_DIR);
@@ -238,12 +236,10 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool, timeout: Duration) -> Re
         command = command.env("KSU_MODULE", id);
     }
 
-    let result = {
-        if wait {
-            command.spawn()?.wait_timeout(timeout).map(|_| ())
-        } else {
-            command.spawn().map(|_| ())
-        }
+    let result = if wait {
+        command.status().map(|_| ())
+    } else {
+        command.spawn().map(|_| ())
     };
     result.map_err(|e| anyhow!("Failed to exec {}: {e}", path.as_ref().display()))
 }
@@ -265,7 +261,7 @@ pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
             return Ok(());
         }
 
-        exec_script(&script_path, block, defs::EXEC_STAGE_TIMEOUT)
+        exec_script(&script_path, block)
     })?;
 
     Ok(())
@@ -287,7 +283,7 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
             continue;
         }
 
-        exec_script(path, wait, defs::EXEC_STAGE_TIMEOUT)?;
+        exec_script(path, wait)?;
     }
 
     Ok(())
@@ -487,7 +483,7 @@ pub fn prune_modules() -> Result<()> {
         // Then execute module's own uninstall.sh
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists()
-            && let Err(e) = exec_script(uninstaller, true, defs::EXEC_STAGE_TIMEOUT)
+            && let Err(e) = exec_script(uninstaller, true)
         {
             warn!("Failed to exec uninstaller: {e}");
         }
@@ -753,7 +749,7 @@ pub fn run_action(id: &str) -> Result<()> {
     #[cfg(all(target_os = "android", target_arch = "aarch64"))]
     {
         if Path::new(&action_script_path).exists() {
-            exec_script(&action_script_path, true, defs::EXEC_STAGE_TIMEOUT)
+            exec_script(&action_script_path, true)
         } else {
             //if no action.sh, try to run lua action
             run_lua(id, "action", false, true).map_err(|e| anyhow::anyhow!("{e}"))
@@ -761,7 +757,7 @@ pub fn run_action(id: &str) -> Result<()> {
     }
 
     #[cfg(not(all(target_os = "android", target_arch = "aarch64")))]
-    exec_script(&action_script_path, true, defs::EXEC_STAGE_TIMEOUT)
+    exec_script(&action_script_path, true)
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
@@ -838,6 +834,55 @@ pub fn read_module_prop(module_path: &Path) -> Result<HashMap<String, String>> {
     Ok(prop_map)
 }
 
+/// Resolve a module icon path to an absolute on-disk path
+fn resolve_module_icon_path(
+    module_prop_map: &mut HashMap<String, String>,
+    key: &str,
+    module_path: &Path,
+) {
+    if let Some(icon_value) = module_prop_map.get(key) {
+        let icon_value = icon_value.trim();
+        if icon_value.is_empty() {
+            return;
+        }
+        let path = std::path::Path::new(icon_value);
+        if path.is_absolute() {
+            log::warn!(
+                "Rejected {} with absolute path for module {}: {}",
+                key,
+                module_prop_map.get("id").map_or("", String::as_str),
+                icon_value
+            );
+            return;
+        }
+        let has_parent = path
+            .components()
+            .any(|c| matches!(c, std::path::Component::ParentDir));
+        if has_parent {
+            log::warn!(
+                "Rejected {} with parent traversal for module {}: {}",
+                key,
+                module_prop_map.get("id").map_or("", String::as_str),
+                icon_value
+            );
+            return;
+        }
+        let candidate = module_path.join(path);
+        if candidate.exists() && candidate.is_file() {
+            if let Some(s) = candidate.to_str() {
+                module_prop_map.insert(key.to_owned(), s.to_string());
+            }
+        } else {
+            log::debug!(
+                "{} not found for module {}: {}",
+                key,
+                module_prop_map.get("id").map_or("", String::as_str),
+                candidate.display()
+            );
+        }
+    }
+}
+
 fn list_module(path: &str) -> Vec<HashMap<String, String>> {
     // Load all module configs once to minimize I/O overhead
     let all_configs = match module_config::get_all_module_configs() {
@@ -897,6 +942,9 @@ fn list_module(path: &str) -> Vec<HashMap<String, String>> {
         module_prop_map.insert("web".to_owned(), web.to_string());
         module_prop_map.insert("action".to_owned(), action.to_string());
         module_prop_map.insert("mount".to_owned(), need_mount.to_string());
+
+        resolve_module_icon_path(&mut module_prop_map, "actionIcon", &path);
+        resolve_module_icon_path(&mut module_prop_map, "webuiIcon", &path);
 
         // Apply module config overrides and extract managed features
         if let Some(module_id) = module_prop_map.get("id")

@@ -77,6 +77,8 @@
     <string name="module_changelog">سجل التغييرات</string>
     <string name="settings_profile_template">قالب ملف تعريف التطبيق</string>
     <string name="settings_profile_template_summary">إدارة القالب المحلي وعبر الإنترنت لملف تعريف التطبيق</string>
+    <string name="settings_check_update">إشعارات التحديث</string>
+    <string name="settings_check_update_summary">تحقق تلقائيًا من تحديثات الوحدة والمدير</string>
     <string name="app_profile_template_create">إنشاء قالب</string>
     <string name="app_profile_template_edit">تحرير القالب</string>
     <string name="app_profile_template_id">المعرف</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">فشل في حفظ القالب</string>
     <string name="app_profile_template_import_empty">الحافظة فارغة!</string>
     <string name="module_changelog_failed">فشل في جلب سجل التغيير: %s</string>
-    <string name="settings_check_update">التحقق من التحديث</string>
-    <string name="settings_check_update_summary">التحقق تلقائيًا من وجود تحديثات عند فتح التطبيق</string>
     <string name="grant_root_failed">فشل في منح صلاحية الجذر!</string>
     <string name="action">إجراء</string>
     <string name="close">إغلاق</string>
@@ -135,10 +135,6 @@
     <string name="confirm">تأكيد</string>
     <string name="cancel">إلغاء</string>
     <!-- Backup related -->
-    <string name="backup_success">النسخ الاحتياطي ناجح (tar.gz)</string>
-    <string name="backup_failed">فشل النسخ الاحتياطي: %1$s</string>
-    <string name="backup_modules">وحدات النسخ الاحتياطي</string>
-    <string name="restore_modules">استعادة الوحدات</string>
     <!-- Restore related messages -->
     <string name="restore_success">تم استعادة الوحدات بنجاح, إعادة التشغيل مطلوبة</string>
     <string name="restore_failed">فشل الاستعادة: %1$s</string>
@@ -157,12 +153,9 @@
     <string name="restore_allowlist">استعادة قائمة المسموح بها</string>
     <string name="settings_custom_background">خلفية التطبيق المخصصة</string>
     <string name="settings_custom_background_summary">حدد صورة كخلفية</string>
-    <string name="settings_card_alpha">شفافية شريط التنقل</string>
     <string name="home_android_version">‏إصدار Android</string>
     <string name="home_device_model">نوع الجهاز</string>
     <string name="su_not_allowed">لا يسمح بمنح المستخدم المتميز ل %s</string>
-    <string name="settings_disable_su">تعطيل توافق su</string>
-    <string name="settings_disable_su_summary">تعطيل أي تطبيقات مؤقتًا من الحصول على امتيازات الجذر عن طريق الأمر &lt;unk&gt; su (لن تتأثر عمليات الجذر الحالية).</string>
     <string name="module_install_multiple_confirm_with_names">هل أنت متأكد من أنك تريد تثبيت وحدات %1$d التالية؟ \n\n%2$s</string>
     <string name="more_settings">المزيد من الإعدادات</string>
     <string name="selinux">SELinux</string>
@@ -215,13 +208,11 @@
     <string name="home_kpm_version">إصدار KPM</string>
     <string name="close_notice">إغلاق</string>
     <string name="kernel_module_notice">تم تطوير وظائف نواة الوحدة النمطية التالية بواسطة KernelPatch وتعديلها لتشمل وظائف نواة الوحدة النمطية لـ SukiSU Ultra</string>
-    <string name="home_ContributionCard_kernelsu">سوكيسو أولترا تتطلع إلى الأمام</string>
     <string name="kpm_control_success">نجحت</string>
     <string name="kpm_control_failed">فشل</string>
-    <string name="home_click_to_ContributionCard_kernelsu">وستشكل سوكيسو أولترا في المستقبل فرعا مستقلا نسبيا من فروع الوحدة، ولكننا لا نزال نقدر كيرنيل سو وموكسو الرسميين وما إلى ذلك. لإسهاماتهم!</string>
-    <string name="not_supported">غير مدعوم</string>
-    <string name="supported">إدعمنا</string>
-    <string name="kernel_patched">النواة غير مصحوبة</string>
+    <string name="kpm_not_supported">غير مدعوم (%s)</string>
+    <string name="kpm_supported">إدعمنا (%s)</string>
+    <string name="kernel_not_patched">النواة غير مصحوبة</string>
     <string name="kernel_not_enabled">لم يتم تكوين النواة</string>
     <string name="custom_settings">الإعدادات المُخصصة</string>
     <string name="kpm_install_mode">KPM Install</string>
@@ -284,10 +275,6 @@
     <string name="show_kpm_info">عرض وظيفة KPM</string>
     <string name="show_kpm_info_summary">إخفاء معلومات KPM ووظيفتها في الشريط المنزلي والأسفل</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">حدد محرك WebUI لاستخدامه</string>
-    <string name="engine_auto_select">اختيار تلقائي</string>
-    <string name="engine_force_webuix">Force the use of WebUI X</string>
-    <string name="engine_force_ksu">Mandatory use of KSU WebUI</string>
     <string name="use_webuix_eruda">حقن Eruda في WebUI X</string>
     <string name="use_webuix_eruda_summary">حقن وحدة التصحيح في WebUI X لجعل تصحيح الأخطاء أسهل. يتطلب تصحيح أخطاء الويب لتكون قيد التشغيل.</string>
     <!-- DPI setting related strings -->
@@ -306,7 +293,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">لغة التطبيق</string>
     <string name="language_system_default">اتبع النظام</string>
-    <string name="settings_card_dim">تعديل ظلام البطاقة</string>
     <!-- Flash related -->
     <string name="error_code">رمز الخطأ</string>
     <string name="check_log">يرجى التحقق من السجل</string>
@@ -345,20 +331,8 @@
     <string name="menu_options">Menu Options</string>
     <string name="sort_options">Sort by</string>
     <string name="app_categories">Application Type Selection</string>
-    <!-- SuSFS Configuration -->
-    <!-- SuSFS Reset Confirmation -->
-    <!-- SuSFS Toast Messages -->
-    <!-- SuSFS Settings Item -->
-    <!-- 开机自启动相关 -->
-    <!-- SuSFS Tab Titles -->
-    <!-- SuSFS Dialog Actions -->
-    <!-- SuSFS Path Management -->
-    <!-- SuSFS Umount Mode -->
-    <!-- SuSFS Run Umount -->
-    <!-- SuSFS Reset Categories -->
-    <!-- SuSFS Path Settings -->
-    <!-- SuSFS Enabled Features -->
-    <!-- Feature Labels -->
-    <!-- 可切换状态 -->
-    <!-- Settings related strings -->
+    <string name="settings_sucompat">إعادة توجيه ثنائي su</string>
+    <string name="settings_sucompat_summary">يسمح للتطبيقات التي تم منحها صلاحيات Superuser في ملف تعريف التطبيق بالحصول على shell superuser من خلال تنفيذ /system/bin/su؛ فعال فقط للعمليات الجديدة.</string>
+    <string name="settings_kernel_umount">إلغاء تحميل النواة</string>
+    <string name="settings_kernel_umount_summary">سلوك إلغاء تحميل مستوى النواة الذي يسيطر عليه KernelSU</string>
 </resources>

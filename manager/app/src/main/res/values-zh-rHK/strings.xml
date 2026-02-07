@@ -77,6 +77,8 @@
     <string name="module_changelog">更新日誌</string>
     <string name="settings_profile_template">App Profile 模版</string>
     <string name="settings_profile_template_summary">管理本地同在線嘅 App Profile 模版</string>
+    <string name="settings_check_update">更新提醒</string>
+    <string name="settings_check_update_summary">自動檢查模塊和管理器更新</string>
     <string name="app_profile_template_create">創建模版</string>
     <string name="app_profile_template_edit">編輯模版</string>
     <string name="app_profile_template_id">模版 ID</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">模版存儲失敗</string>
     <string name="app_profile_template_import_empty">剪貼板為空！</string>
     <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
-    <string name="settings_check_update">檢查更新</string>
-    <string name="settings_check_update_summary">喺應用啟動後自動檢查是否有最新版</string>
     <string name="grant_root_failed">獲取 root 失敗！</string>
     <string name="action">執行</string>
     <string name="close">關閉</string>
@@ -133,10 +133,6 @@
     <string name="confirm">確定</string>
     <string name="cancel">取消</string>
     <!-- Backup related -->
-    <string name="backup_success">備份成功 (tar.gz)</string>
-    <string name="backup_failed">備份失敗：%1$s</string>
-    <string name="backup_modules">備份模組</string>
-    <string name="restore_modules">恢復模組</string>
     <!-- Restore related messages -->
     <string name="restore_success">模組已成功還原，需重新啟動生效</string>
     <string name="restore_failed">還原失敗：%1$s</string>
@@ -159,8 +155,10 @@
     <string name="home_android_version">Android 版本</string>
     <string name="home_device_model">裝置</string>
     <string name="su_not_allowed">唔允許授予 %s 超級用戶權限</string>
-    <string name="settings_disable_su">禁用 su 兼容性</string>
-    <string name="settings_disable_su_summary">臨時禁止任何應用程式通過 su 命令獲取 Root 權限（現有嘅 Root 進程唔受影響）</string>
+    <string name="settings_sucompat">傳統 su 命令支援</string>
+    <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅對新行程生效。</string>
+    <string name="settings_kernel_umount">核心處理解除掛載模組</string>
+    <string name="settings_kernel_umount_summary">在核心為需要的應用程式解除掛載模組</string>
     <string name="module_install_multiple_confirm_with_names">確定要安裝以下 %1$d 個模組嗎？\n\n%2$s</string>
     <string name="more_settings">更多配置</string>
     <string name="selinux">SELinux</string>
@@ -215,13 +213,11 @@
     <string name="home_kpm_version">KPM 版本</string>
     <string name="close_notice">關閉</string>
     <string name="kernel_module_notice">以下核心模組功能由 KernelPatch 開發，經過修改後加入 SukiSU Ultra 嘅核心模組功能</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra 展望</string>
     <string name="kpm_control_success">成功</string>
     <string name="kpm_control_failed">錯誤</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra 未來將會成為一個相對獨立嘅 KSU 分支，但仲係會感謝官方 KernelSU 同 MKSU 等做出嘅貢獻</string>
-    <string name="not_supported">唔支援</string>
-    <string name="supported">支援</string>
-    <string name="kernel_patched">核心未進行補丁</string>
+    <string name="kpm_not_supported">唔支援 (%s)</string>
+    <string name="kpm_supported">支援 (%s)</string>
+    <string name="kernel_not_patched">核心未進行補丁</string>
     <string name="kernel_not_enabled">核心未配置</string>
     <string name="custom_settings">個性化配置</string>
     <string name="kpm_install_mode">安裝</string>
@@ -284,10 +280,6 @@
     <string name="show_kpm_info">隱藏 KPM 功能</string>
     <string name="show_kpm_info_summary">喺主頁同底欄隱藏 KPM 相關功能同信息</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">選擇使用嘅 WebUI 引擎</string>
-    <string name="engine_auto_select">自動選擇</string>
-    <string name="engine_force_webuix">強制使用 WebUI X</string>
-    <string name="engine_force_ksu">強制使用 KSU 嘅 WebUI</string>
     <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">喺 WebUI X 中注入調試控制台，使調試更容易,需要啟用 WebView 調試</string>
     <!-- DPI setting related strings -->
@@ -306,7 +298,7 @@
     <!-- Language settings related strings -->
     <string name="settings_language">應用語言</string>
     <string name="language_system_default">跟隨系統</string>
-    <string name="settings_card_dim">卡片暗度調節</string>
+    <string name="settings_background_dim">背景暗度調節</string>
     <!-- Flash related -->
     <string name="error_code">錯誤代碼</string>
     <string name="check_log">請查看日誌</string>
@@ -488,7 +480,7 @@
     <string name="susfs_backup_file_not_found">搵唔到備份檔案</string>
     <string name="susfs_backup_invalid_format">備份檔案格式無效</string>
     <string name="susfs_backup_version_mismatch">備份版本唔一樣，但會嘗試還原</string>
-    <string name="susfs_restore_title">還原</string>
+    <string name="restore">還原</string>
     <string name="susfs_restore_description">由備份檔案還原 SuSFS 配置。呢個動作會覆蓋晒而家所有配置。</string>
     <string name="susfs_restore_select_file">揀備份檔案</string>
     <string name="susfs_restore_success" formatted="false">配置還原成功，備份建立於 %s，嚟自裝置：%s</string>
@@ -506,7 +498,7 @@
     <string name="susfs_edit_sus_path">編輯 SuS 路徑</string>
     <string name="edit_kstat_statically_title">編輯 Kstat 靜態配置</string>
     <string name="edit_kstat_path_title">編輯 Kstat 路徑</string>
-    <string name="susfs_save">儲存</string>
+    <string name="save">儲存</string>
     <string name="edit">編輯</string>
     <string name="delete">刪除</string>
     <string name="update">更新</string>
@@ -552,21 +544,16 @@
     <string name="avc_log_spoofing_warning">重要提示：\n
 - 核心入面嘅預設設定係 \'0\'。\n
 - 啟用呢個功能有時會令到開發人員喺除錯權限或者 SELinux 問題嗰陣難以搵出原因，所以建議用戶喺除錯時禁用呢個功能。</string>
-    <!-- 模块签名功能描述 -->
-    <string name="module_verified">已驗證</string>
-    <string name="module_signature_verified">模組簽名已驗證</string>
-    <string name="module_signature_verification">驗證簽名</string>
-    <string name="module_signature_verification_summary">模組安裝嗰陣，會強制驗證個簽名。（淨係 ARM架構 用得）</string>
-    <string name="module_signature_invalid">未知發布者</string>
-    <string name="module_signature_invalid_message">未經簽名嘅模組可能唔完整。為咗保護裝置，已經阻止安裝呢個模組。</string>
-    <string name="module_signature_verification_failed">未經簽名嘅模組可能唔完整。你想唔想安裝嚟自未知發布者嘅模組？</string>
-    <!-- KPM patching related strings -->
-    <!-- KPM workflow related -->
-    <!-- KPM error messages -->
-    <!-- KPM option radio group strings -->
-    <!-- UID Scanner Settings -->
-    <!-- 确认安装相关字符串 -->
-    <!-- SUS Map related strings -->
-    <!-- Log Viewer -->
-    <!-- MiUI Uninstall Desc -->
+    <string name="module_shortcut_title">建立捷徑</string>
+    <string name="module_shortcut_name_label">捷徑名稱</string>
+    <string name="module_shortcut_icon_pick">選擇自訂圖示</string>
+    <string name="module_shortcut_add">新增捷徑</string>
+    <string name="module_shortcut_not_supported">啟動器不支援桌面捷徑。</string>
+    <string name="module_shortcut_created">已在桌面建立捷徑。</string>
+    <string name="module_shortcut_updated">捷徑已更新。</string>
+    <string name="module_shortcut_delete">刪除捷徑</string>
+    <string name="module_shortcut_type_title">選擇類型</string>
+    <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為此應用啟用「建立桌面捷徑」權限。</string>
+    <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為此應用啟用「桌面捷徑」權限。</string>
+    <string name="module_shortcut_permission_tip_default">若建立捷徑失敗，請在系統設定中為此應用啟用桌面捷徑權限。</string>
 </resources>

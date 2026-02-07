@@ -1,18 +1,26 @@
 package com.resukisu.resukisu.ui.component.profile
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReadMore
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.rounded.Article
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
+import com.resukisu.resukisu.ui.component.settings.SettingsDropdownWidget
 import com.resukisu.resukisu.ui.util.listAppProfileTemplates
 import com.resukisu.resukisu.ui.util.setSepolicy
 import com.resukisu.resukisu.ui.viewmodel.getTemplateInfoById
@@ -29,77 +37,56 @@ fun TemplateConfig(
     onManageTemplate: () -> Unit = {},
     onProfileChange: (Natives.Profile) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+//    var expanded by remember { mutableStateOf(false) }
     var template by rememberSaveable {
         mutableStateOf(profile.rootTemplate ?: "")
     }
-    val profileTemplates = listAppProfileTemplates()
-    val noTemplates = profileTemplates.isEmpty()
+    val profileTemplates = listOf("None") + listAppProfileTemplates()
+//    val noTemplates = profileTemplates.isEmpty()
 
-    ListItem(headlineContent = {
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-        ) {
-            OutlinedTextField(
+    SettingsDropdownWidget(
+        icon = Icons.AutoMirrored.Rounded.Article,
+        title = stringResource(R.string.profile_template),
+        items = profileTemplates,
+        selectedIndex = profileTemplates.indexOf(template) + 1,
+        afterContent = { index ->
+            if (index == 0) return@SettingsDropdownWidget
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ReadMore,
+                contentDescription = null,
                 modifier = Modifier
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                readOnly = true,
-                label = { Text(stringResource(R.string.profile_template)) },
-                value = template.ifEmpty { "None" },
-                onValueChange = {},
-                trailingIcon = {
-                    if (noTemplates) {
-                        IconButton(
-                            onClick = onManageTemplate
-                        ) {
-                            Icon(Icons.Filled.Create, null)
-                        }
-                    } else if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
-                    else Icon(Icons.Filled.ArrowDropDown, null)
-                },
+                    .size(35.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        onViewTemplate(profileTemplates[index])
+                    }
+                    .padding(5.dp)
             )
-            if (profileTemplates.isEmpty()) {
-                return@ExposedDropdownMenuBox
-            }
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                profileTemplates.forEach { tid ->
-                    val templateInfo =
-                        getTemplateInfoById(tid) ?: return@forEach
-                    DropdownMenuItem(
-                        text = { Text(tid) },
-                        onClick = {
-                            template = tid
-                            if (setSepolicy(tid, templateInfo.rules.joinToString("\n"))) {
-                                onProfileChange(
-                                    profile.copy(
-                                        rootTemplate = tid,
-                                        rootUseDefault = false,
-                                        uid = templateInfo.uid,
-                                        gid = templateInfo.gid,
-                                        groups = templateInfo.groups,
-                                        capabilities = templateInfo.capabilities,
-                                        context = templateInfo.context,
-                                        namespace = templateInfo.namespace,
-                                    )
-                                )
-                            }
-                            expanded = false
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                onViewTemplate(tid)
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.ReadMore, null)
-                            }
-                        }
-                    )
-                }
-            }
         }
-    })
+    ) { index ->
+        if (index == 0) {
+            template = ""
+            return@SettingsDropdownWidget
+        }
+
+        template = profileTemplates[index - 1]
+
+        val templateInfo =
+            getTemplateInfoById(template) ?: return@SettingsDropdownWidget
+
+        if (setSepolicy(template, templateInfo.rules.joinToString("\n"))) {
+            onProfileChange(
+                profile.copy(
+                    rootTemplate = template,
+                    rootUseDefault = false,
+                    uid = templateInfo.uid,
+                    gid = templateInfo.gid,
+                    groups = templateInfo.groups,
+                    capabilities = templateInfo.capabilities,
+                    context = templateInfo.context,
+                    namespace = templateInfo.namespace,
+                )
+            )
+        }
+    }
 }

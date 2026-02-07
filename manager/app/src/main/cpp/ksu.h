@@ -36,14 +36,10 @@ void get_full_version(char* buff);
 #define DYNAMIC_MANAGER_OP_GET 1
 #define DYNAMIC_MANAGER_OP_CLEAR 2
 
-#define UID_SCANNER_OP_GET_STATUS 0
-#define UID_SCANNER_OP_TOGGLE 1
-#define UID_SCANNER_OP_CLEAR_ENV 2
-
 struct dynamic_manager_user_config {
 	unsigned int operation;
 	unsigned int size;
-	char hash[65];
+    char hash[64];
 };
 
 
@@ -95,14 +91,6 @@ struct app_profile {
 	};
 };
 
-struct manager_list_info {
-	int count;
-	struct {
-		uid_t uid;
-		int signature_index;
-	} managers[2];
-};
-
 bool set_app_profile(const struct app_profile* profile);
 
 int get_app_profile(struct app_profile* profile);
@@ -117,21 +105,10 @@ bool get_dynamic_manager(struct dynamic_manager_user_config* config);
 
 bool clear_dynamic_manager();
 
-bool get_managers_list(struct manager_list_info* info);
-
-bool verify_module_signature(const char* input);
-
-bool is_uid_scanner_enabled();
-
-bool set_uid_scanner_enabled(bool enabled);
-
-bool clear_uid_scanner_environment();
-
 // Feature IDs
 enum ksu_feature_id {
     KSU_FEATURE_SU_COMPAT = 0,
     KSU_FEATURE_KERNEL_UMOUNT = 1,
-    KSU_FEATURE_ENHANCED_SECURITY = 2,
 	KSU_FEATURE_SULOG = 3,
 };
 
@@ -206,10 +183,6 @@ bool is_su_enabled();
 bool set_kernel_umount_enabled(bool enabled);
 bool is_kernel_umount_enabled();
 
-// Enhanced security
-bool set_enhanced_security_enabled(bool enabled);
-bool is_enhanced_security_enabled();
-
 // Su log
 bool set_sulog_enabled(bool enabled);
 bool is_sulog_enabled();
@@ -231,15 +204,16 @@ struct ksu_dynamic_manager_cmd {
 	struct dynamic_manager_user_config config; // Input/Output: dynamic manager config
 };
 
-struct ksu_get_managers_cmd {
-	struct manager_list_info manager_info; // Output: manager list information
-};
+struct ksu_manager_entry {
+    __u32 uid;
+    __u8 signature_index;
+} __attribute__((packed));
 
-struct ksu_enable_uid_scanner_cmd {
-    uint32_t operation; // Input: operation type (UID_SCANNER_OP_GET_STATUS, UID_SCANNER_OP_TOGGLE, UID_SCANNER_OP_CLEAR_ENV)
-    uint32_t enabled; // Input: enable or disable (for UID_SCANNER_OP_TOGGLE)
-    uint64_t status_ptr; // Input: pointer to store status (for UID_SCANNER_OP_GET_STATUS)
-};
+struct ksu_get_managers_cmd {
+    __u16 count;          // Input / Output: number of managers in array
+    __u16 total_count;    // Output: total number of managers in requested list
+    struct ksu_manager_entry managers[]; // Output: Array of active manager
+} __attribute__((packed));
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
@@ -262,8 +236,9 @@ struct ksu_enable_uid_scanner_cmd {
 #define KSU_IOCTL_HOOK_TYPE _IOC(_IOC_READ, 'K', 101, 0)
 #define KSU_IOCTL_ENABLE_KPM _IOC(_IOC_READ, 'K', 102, 0)
 #define KSU_IOCTL_DYNAMIC_MANAGER _IOC(_IOC_READ|_IOC_WRITE, 'K', 103, 0)
-#define KSU_IOCTL_GET_MANAGERS _IOC(_IOC_READ|_IOC_WRITE, 'K', 104, 0)
-#define KSU_IOCTL_ENABLE_UID_SCANNER _IOC(_IOC_READ|_IOC_WRITE, 'K', 105, 0)
+#define KSU_IOCTL_GET_MANAGERS _IOC(_IOC_READ|_IOC_WRITE, 'K', 105, 0)
+
+bool get_managers_list(struct ksu_get_managers_cmd **out_cmd);
 
 bool get_allow_list(struct ksu_get_allow_list_cmd *);
 
@@ -285,12 +260,5 @@ bool legacy_is_su_enabled();
 bool legacy_is_KPM_enable();
 bool legacy_get_hook_type(char* hook_type, size_t size);
 void legacy_get_full_version(char* buff);
-bool legacy_set_dynamic_manager(unsigned int size, const char* hash);
-bool legacy_get_dynamic_manager(struct dynamic_manager_user_config* config);
-bool legacy_clear_dynamic_manager();
-bool legacy_get_managers_list(struct manager_list_info* info);
-bool legacy_is_uid_scanner_enabled();
-bool legacy_set_uid_scanner_enabled(bool enabled);
-bool legacy_clear_uid_scanner_environment();
 
 #endif //KERNELSU_KSU_H

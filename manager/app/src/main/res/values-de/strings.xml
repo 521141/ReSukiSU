@@ -77,6 +77,8 @@
     <string name="module_changelog">Änderungsprotokoll</string>
     <string name="settings_profile_template">App-Profil-Vorlage</string>
     <string name="settings_profile_template_summary">Verwalte die lokale und online Vorlage des App-Profils</string>
+    <string name="settings_check_update">Update-Benachrichtigungen</string>
+    <string name="settings_check_update_summary">Automatisch nach Modul- und Manager-Updates suchen</string>
     <string name="app_profile_template_create">Vorlage erstellen</string>
     <string name="app_profile_template_edit">Vorlage bearbeiten</string>
     <string name="app_profile_template_id">ID</string>
@@ -97,8 +99,6 @@
     <string name="app_profile_template_save_failed">Schlug beim Speichern der Vorlage fehl</string>
     <string name="app_profile_template_import_empty">Zwischenablage ist leer!</string>
     <string name="module_changelog_failed">Konnte Veränderungs-Protokoll nicht laden: %s</string>
-    <string name="settings_check_update">Auf Aktualisierung prüfen</string>
-    <string name="settings_check_update_summary">Prüfe automatisch auf Aktualisierungen, wenn die App geöffnet wird</string>
     <string name="grant_root_failed">Root-Zugriff konnte nicht gewährt werden!</string>
     <string name="action">Aktion</string>
     <string name="close">Schließen</string>
@@ -135,10 +135,6 @@
     <string name="confirm">Bestätigen</string>
     <string name="cancel">Abbrechen</string>
     <!-- Backup related -->
-    <string name="backup_success">Sicherung erfolgreich (tar.gz)</string>
-    <string name="backup_failed">Sicherung fehlgeschlagen: %1$s</string>
-    <string name="backup_modules">sicherungsmodule</string>
-    <string name="restore_modules">wiederherstellen</string>
     <!-- Restore related messages -->
     <string name="restore_success">Module erfolgreich wiederhergestellt, Neustart erforderlich</string>
     <string name="restore_failed">Wiederherstellung fehlgeschlagen: %1$s</string>
@@ -157,12 +153,9 @@
     <string name="restore_allowlist">Allowlist wiederherstellen</string>
     <string name="settings_custom_background">Eigener App-Hintergrund</string>
     <string name="settings_custom_background_summary">Wählen Sie ein Bild als Hintergrund</string>
-    <string name="settings_card_alpha">Transparenz der Navigationsleiste</string>
     <string name="home_android_version">Androidversion</string>
     <string name="home_device_model">Geräteausführung</string>
     <string name="su_not_allowed">Superuser %s zu erlauben ist nicht erlaubt</string>
-    <string name="settings_disable_su">Su Kompatibilität deaktivieren</string>
-    <string name="settings_disable_su_summary">Deaktivieren Sie temporär alle Anwendungen, die root-Privilegien über den Befehl &lt;unk&gt; su zu erhalten (bestehende root-Prozesse werden nicht beeinflusst).</string>
     <string name="module_install_multiple_confirm_with_names">Möchten Sie die folgenden %1$d Module installieren? \n\n\n%2$s</string>
     <string name="more_settings">Weitere Einstellungen</string>
     <string name="selinux">SELinux</string>
@@ -215,13 +208,11 @@
     <string name="home_kpm_version">KPM-Version</string>
     <string name="close_notice">Schließen</string>
     <string name="kernel_module_notice">Die folgenden Kernel-Modulfunktionen wurden von KernelPatch entwickelt und so modifiziert, dass die Funktionen des Kernel-Moduls von SukiSU Ultra enthalten sind</string>
-    <string name="home_ContributionCard_kernelsu">SukiSU Ultra freut sich auf</string>
     <string name="kpm_control_success">Erfolgreich</string>
     <string name="kpm_control_failed">Fehlgeschlagen</string>
-    <string name="home_click_to_ContributionCard_kernelsu">SukiSU Ultra wird in Zukunft ein relativ unabhängiger Zweig der KSU sein, aber wir schätzen immer noch die offiziellen KernelSU und MKSU usw. für ihre Beiträge!</string>
-    <string name="not_supported">Nicht unterstützt</string>
-    <string name="supported">Unterstützt:</string>
-    <string name="kernel_patched">Kernel nicht gepatcht</string>
+    <string name="kpm_not_supported">Nicht unterstützt (%s)</string>
+    <string name="kpm_supported">Unterstützt: (%s)</string>
+    <string name="kernel_not_patched">Kernel nicht gepatcht</string>
     <string name="kernel_not_enabled">Kernel nicht konfiguriert</string>
     <string name="custom_settings">Eigene Einstellungen</string>
     <string name="kpm_install_mode">KPM Install</string>
@@ -284,10 +275,6 @@
     <string name="show_kpm_info">KPM-Funktion anzeigen</string>
     <string name="show_kpm_info_summary">Versteckt KPM-Informationen und Funktion in der Home- und Unterleiste</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Wähle die zu verwendende WebUI-Engine</string>
-    <string name="engine_auto_select">Automatisch auswählen</string>
-    <string name="engine_force_webuix">Nutzung von WebUI X erzwingen</string>
-    <string name="engine_force_ksu">Pflichtanwendung von KSU WebUI</string>
     <string name="use_webuix_eruda">Eruda in WebUI X injizieren</string>
     <string name="use_webuix_eruda_summary">Fügen Sie eine Debug-Konsole in WebUI X ein, um das Debuggen zu vereinfachen. Benötigt Debugging im WebUI X.</string>
     <!-- DPI setting related strings -->
@@ -306,7 +293,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">App Sprache</string>
     <string name="language_system_default">Folge Systemeinstellung</string>
-    <string name="settings_card_dim">Kartenfinsternis Anpassung</string>
     <!-- Flash related -->
     <string name="error_code">fehlercode</string>
     <string name="check_log">Bitte überprüfen Sie das Log</string>
@@ -345,20 +331,6 @@
     <string name="menu_options">Menu Options</string>
     <string name="sort_options">Sort by</string>
     <string name="app_categories">Application Type Selection</string>
-    <!-- SuSFS Configuration -->
-    <!-- SuSFS Reset Confirmation -->
-    <!-- SuSFS Toast Messages -->
-    <!-- SuSFS Settings Item -->
-    <!-- 开机自启动相关 -->
-    <!-- SuSFS Tab Titles -->
-    <!-- SuSFS Dialog Actions -->
-    <!-- SuSFS Path Management -->
-    <!-- SuSFS Umount Mode -->
-    <!-- SuSFS Run Umount -->
-    <!-- SuSFS Reset Categories -->
-    <!-- SuSFS Path Settings -->
-    <!-- SuSFS Enabled Features -->
-    <!-- Feature Labels -->
-    <!-- 可切换状态 -->
-    <!-- Settings related strings -->
+    <string name="settings_sucompat">Su-Binärdatei umleiten</string>
+    <string name="settings_sucompat_summary">Ermöglicht Anwendungen mit Superuser-Berechtigung im App-Profil, eine Superuser-Shell durch Ausführung von /system/bin/su zu erhalten; wirksam nur für neue Prozesse.</string>
 </resources>
